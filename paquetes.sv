@@ -64,7 +64,7 @@ class trans_sb #(parameter ancho = 16);
 	endtask
 	
 	function print(string tag); //Funcion para imprimir el contenido del objeto Trans_sb
-		$display ("[%g] %s Dato=0x%h Fuente=%d Destino=%d T_envio=%g T_recibido=%g Latencia=%g" 
+		$display ("[%g] %s Dato=0x%h Fuente=%d Destino=%d T_envio=%g T_recibido=%g Latencia=%g", 
 			$time,
 			tag,
 			this.dato_enviado,
@@ -84,7 +84,7 @@ endclass
 ///////////////////////////////////////////////
 // Definicion de la transaccion pck4 Test-->Agente/Generador usando typedef 
 ///////////////////////////////////////////////
-typedef enum {genericos, broadcast , Rst_aleatorio, Completo} instrucciones_agente; //completo es todo junto
+typedef enum {genericos, broadcast_inst , Rst_aleatorio, Completo} instrucciones_agente; //completo es todo junto ***Se le cambio el nombre al broadcast porque ya habia uno igual***
 
 ///////////////////////////////////////////////
 // Transaccion pck5 Test --> Scoreboard
@@ -109,11 +109,13 @@ typedef mailbox #(solicutud_sb) solicutud_sb_mbx;//Test===> Scoreboard
 // Solo prueba para comprobar como se crea el objeto (Ignorar)
 module prueba;
 	trans_dut primera;
-	primera=new;
+
+	initial begin
+	primera = new();
 	primera.randomize();
 	primera.print("primera generacion");
 
-
+	end
 endmodule	
 	
 	

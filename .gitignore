@@ -1,2 +1,12 @@
 #Para ignorar archivos temporales ~
 *~
+
+
+#Para ignorar archivos que se crearon en la maquina virtual al compilar
+csrc/
+log_test
+salida
+salida.daidir/
+ucli.key
+verdi_config_file
+
