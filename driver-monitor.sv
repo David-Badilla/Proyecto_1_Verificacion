@@ -1,5 +1,3 @@
-
-
 class driver #(parameter drvrs = 4, parameter ancho = 16);
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
 	trans_dut_mbx agnt_drv_mbx;
@@ -28,12 +26,11 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 			end
 			
 			
-			$display("[%g] El Driver espera una transacción",$time);
-			espera=0;
+			$display("[%g] El Driver espera una transacci??n",$time);
 
 			@(posedge vif.clk);
 			agnt_drv_mbx.get(transaccion);		//espera a que haya algo en el mailbox bloqueando el avance
-			transaccion.print("Driver: Transaccion recibida");	//imprime lo que recibió 
+			transaccion.print("Driver: Transaccion recibida");	//imprime lo que recibi?? 
 			$display("transacciones pendientes en mbx agnt-driver = %g",agnt_drv_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
 			
 			
@@ -60,17 +57,17 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 						
 						vif.pndng[0]=0;
 						vif.D_pop[0]=0;
-						//vif.pop[0]=0; No por que es una señal que se recibe desde el dut
-						//vif.push[0]=0; No por que es una señal que se recibe desde el dut
+						//vif.pop[0]=0; No por que es una se??al que se recibe desde el dut
+						//vif.push[0]=0; No por que es una se??al que se recibe desde el dut
 						vif.rst=0;
 						espera[0]=0;
 						@(posedge vif.clk);
-						if (subprocesos_entrada[0].size() >0);begin //Revisa si hay algo en cola para activar la bandera de pendiente 
+						if (subprocesos_entrada[0].size() >0) begin //Revisa si hay algo en cola para activar la bandera de pendiente 
 							vif.pndng[0]=1;
 							
-						end					
-						else vif.pndng[0]=0;
-						
+						end	else begin 
+						  vif.pndng[0]=0;
+						end 
 						if (vif.pop==1) begin //Revisa la entrada pop
 						
 							tran1=subprocesos_entrada[0].pop_front; //saca el primero en la cola						
@@ -79,7 +76,7 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 							while(espera[0] < tran1.retardo)begin 	//manejo del retardo  subprocesos_entrada[0][0] segundo 0 para siempre mantenerse en la instruccion primera de la cola
 								@(posedge vif.clk);
 								espera[0]=espera[0]+1;
-								vif.D_pop[0]={tran1.destino,tran1.dato}; //concatenando el destino y dato que necesita recibir el dut ¿Poner fuera del while?
+								vif.D_pop[0]={tran1.destino,tran1.dato}; //concatenando el destino y dato que necesita recibir el dut ??Poner fuera del while?
 							end //
 							
 							
@@ -96,11 +93,11 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 						
 						if (vif.push==1)begin
 							recibido1.fuente=0; //En este caso la fuente es donde se recibe en mensaje se compara con el destino en teoria
-							recibido1.destino=[ancho:ancho-6] vif.dato;
-							recibido1.dato=[ancho-6:0] vif.dato;
+							recibido1.destino=vif.dato[ancho:ancho-6] ;
+							recibido1.dato=vif.dato[ancho-6:0] ;
 							recibido1.tiempo_recibido=$time; 
 
-							drv_chkr_mbx.put(recibido); //se coloca de una vez al mailbox
+							drv_chkr_mbx.put(recibido1); //se coloca de una vez al mailbox
 
 						end
 						
