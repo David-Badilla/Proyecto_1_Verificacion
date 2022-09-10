@@ -4,6 +4,8 @@ class driver #(parameter drvrs = 4 parameter ancho = 16);
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
 	trans_dut_mbx agnt_drv_mbx;
 	trans_dut_mbx drv_chkr_mbx;
+	trans_dut_mbx subprocesos[drvrs-1:0];
+	
 	int espera;
 	int i;
 	
@@ -41,6 +43,85 @@ class driver #(parameter drvrs = 4 parameter ancho = 16);
 				espera=espera+1;
 			end // 
 			
+			
+			
+			
+			//IDEA NO TOMAR EN CUENTA
+			
+			fork		//Idea generar siempre los 16 procesos diferentes aunque no se usen
+				begin //Dispositivo 1 
+				
+				end
+				
+				
+				begin //Dispositivo 2 
+				
+				end
+				
+				
+				begin //Dispositivo 3 
+				
+				end
+				
+				begin //Dispositivo 4 
+				
+				end
+				
+				begin //Dispositivo 5 
+				
+				end
+				
+				begin //Dispositivo 6 
+				
+				end
+				
+				
+				begin //Dispositivo 7 
+				
+				end
+				
+				begin //Dispositivo 8 
+				
+				end
+				
+				begin //Dispositivo 9 
+				
+				end
+				
+				begin //Dispositivo 10 
+				
+				end
+				
+				begin //Dispositivo 11
+				
+				end
+				
+				begin //Dispositivo 12
+				
+				end
+				
+				begin //Dispositivo 13
+				
+				end
+				
+				begin //Dispositivo 14
+				
+				end
+				
+				begin //Dispositivo 15
+				
+				end
+				
+				begin //Dispositivo 16
+			
+				end
+				
+				
+				
+			
+			
+			
+			join_none
 			
 		
 		
