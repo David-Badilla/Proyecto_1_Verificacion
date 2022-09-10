@@ -38,19 +38,26 @@ class driver #(parameter drvrs = 4 parameter ancho = 16);
 			////////////////////////////////////////////////////////////////////////////////////
 			/// Apartir de aqui ni idea como implemetar todos los fork hijos para cada interface
 			////////////////////////////////////////////////////////////////////////////////////
+			 
+			/*
 			while(espera < transaccion.retardo)begin 	//manejo del retardo
-				@(posedge vif.clk);
-				espera=espera+1;
-			end // 
+						@(posedge vif.clk);
+						espera=espera+1;
+					end //
+			*/
 			
 			
 			
 			
-			//IDEA NO TOMAR EN CUENTA
+		end //end del forever	
 			
+			//-----------------IDEA NO TOMAR EN CUENTA---------------------
 			fork		//Idea generar siempre los 16 procesos diferentes aunque no se usen
 				begin //Dispositivo 1 
-				
+					while(espera < transaccion.retardo)begin 	//manejo del retardo
+						@(posedge vif.clk);
+						espera=espera+1;
+					end //
 				end
 				
 				
@@ -128,7 +135,7 @@ class driver #(parameter drvrs = 4 parameter ancho = 16);
 		
 		
 		
-		end //end del forever
+		
 	
 	
 	
