@@ -1,6 +1,6 @@
 
 class driver #(parameter drvrs = 4, parameter ancho = 16);
-	reg reset = 0 ;
+
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
 	trans_dut_mbx agnt_drv_mbx;
 	trans_dut_mbx drv_chkr_mbx;
@@ -51,20 +51,20 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 				
 					forever begin
 						
-						vif.pndng[i]=0;		//reinicio de variables
-						vif.D_pop[i]=0;
+						vif.pndng[0][i]=0;		//reinicio de variables
+						vif.D_pop[0][i]=0;
 						vif.rst=0;
 						espera[i]=0;
 						
 						@(posedge vif.clk);
 						if (subprocesos_entrada[i].size() >0) begin //Revisa si hay algo en cola para activar la bandera de pendiente 
-							vif.pndng[i]=1;	
+							vif.pndng[0][i]=1;	
 						end	else begin 
-						  vif.pndng[i]=0;
+						  vif.pndng[0][i]=0;
 						end 
 						
 						
-						if (vif.pop[i]) begin //Revisa la entrada pop
+						if (vif.pop[0][i]) begin //Revisa la entrada pop
 						
 							trans[i]=subprocesos_entrada[i].pop_front; //saca el primero en la cola	pop					
 							trans[i].tiempo_envio=$time;
@@ -72,7 +72,7 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 							while(espera[i] < trans[i].retardo)begin 	//manejo del retardo 
 								@(posedge vif.clk);
 								espera[i]=espera[i]+1;
-								vif.D_pop[i]={trans[i].destino,trans[i].dato}; //concatenando el destino y dato que necesita recibir el dut ??Poner fuera del while?
+								vif.D_pop[0][i]={trans[i].destino,trans[i].dato}; //concatenando el destino y dato que necesita recibir el dut ??Poner fuera del while?
 							end //
 							
 							
@@ -89,10 +89,10 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 						//Revision si hay algun dato que salga (MONITOR)
 						/////////////////////////////////////////////////
 						
-						if (vif.push[i])begin
+						if (vif.push[0][i])begin
 							recibido[i].fuente=i; //En este caso la fuente es donde se recibe en mensaje se compara con el destino en teoria
-							recibido[i].destino=vif.D_push[i][ancho-1:ancho-8] ; //Extrae la direccion del destino que se supone debe ir
-							recibido[i].dato=vif.D_push[i][ancho-9:0] ; // Extrae del dato recibido de dut el destino original
+							recibido[i].destino=vif.D_push[0][i][ancho-1:ancho-8] ; //Extrae la direccion del destino que se supone debe ir
+							recibido[i].dato=vif.D_push[0][i][ancho-9:0] ; // Extrae del dato recibido de dut el destino original
 							recibido[i].tiempo_recibido=$time; 
 							recibido[i].print("Driver: transaccion en dispositivo recibida:");
 							drv_chkr_mbx.put(recibido[i]); //se coloca de una vez al mailbox
