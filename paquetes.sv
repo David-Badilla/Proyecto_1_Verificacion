@@ -104,19 +104,7 @@ typedef mailbox #(trans_sb) trans_sb_mbx;  //Checker ===> Scoreboard
 typedef mailbox #(instrucciones_agente) instrucciones_agente_mbx;  //Test===> Agente/Generador
 typedef mailbox #(solicitud_sb) solicitud_sb_mbx;//Test===> Scoreboard
 
-
-
-// Solo prueba para comprobar como se crea el objeto (Ignorar)
-module prueba;
-	trans_dut primera;
-
-	initial begin
-	primera = new();
-	primera.randomize();
-	primera.print("primera generacion");
-
-	end
-endmodule	
+	
 	
 	
 	

@@ -42,7 +42,7 @@ class test #(parameter ancho=16 , parameter drvrs=4);
 	endfunction
 	
 	task run;
-		$display("[%d] El Test fue inicializado",$time);
+		$display("[%g] El Test fue inicializado",$time);
 		
 		fork
 			ambiente_instancia.run();
@@ -51,33 +51,33 @@ class test #(parameter ancho=16 , parameter drvrs=4);
 		
 		instr_agente = genericos;
 		test_agnt_mbx.put(instr_agente);
-		$display("[%d] Test: Enviada la primera instruccion (genericos)",$time);
+		$display("[%g] Test: Enviada la primera instruccion (genericos)",$time);
 		
 		
-		instr_agente = broadcast_inst;
+		/*instr_agente = broadcast_inst;
 		test_agnt_mbx.put(instr_agente);
-		$display("[%d] Test: Enviada la segunda instruccion (broadcast_inst)",$time);
+		$display("[%g] Test: Enviada la segunda instruccion (broadcast_inst)",$time);*/
 		
 		
 		
-		instr_agente = Rst_aleatorio;
+		/*instr_agente = Rst_aleatorio;
 		test_agnt_mbx.put(instr_agente);
-		$display("[%d] Test: Enviada la tercera instruccion (Rst_aleatorio)",$time);
+		$display("[%g] Test: Enviada la tercera instruccion (Rst_aleatorio)",$time);*/
 		
 		
-		instr_agente = Completo;
+		/*instr_agente = Completo;
 		test_agnt_mbx.put(instr_agente);
-		$display("[%d] Test: Enviada la cuarta instruccion (Completo)",$time);
+		$display("[%g] Test: Enviada la cuarta instruccion (Completo)",$time);*/
 		
 		
-		instr_agente = trans_especifica;
+		/*instr_agente = trans_especifica;
 		test_agnt_mbx.put(instr_agente);
-		$display("[%d] Test: Enviada la quinta instruccion (trans_especifica)",$time);
+		$display("[%g] Test: Enviada la quinta instruccion (trans_especifica)",$time);*/
 		
 		
 		
 		#10000
-		$display("[%d] Test: Se alcanza el tiempo limite",$time);
+		$display("[%g] Test: Se alcanza el tiempo limite",$time);
 		
 		//Inician instrucciones al scoreboard para reporte 
 		/*		//AUN NO HAY SCOREBOARD

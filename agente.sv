@@ -27,11 +27,11 @@ class agente #(parameter ancho=16);
 
 	
 	task run;
-		$display("[%d] El Agente fue inicializado",$time);
+		$display("[%g] El Agente fue inicializado",$time);
 		forever begin
 			#1
 			if(test_agent_mbx.num() > 0)begin
-				$display("[%d] Agente: se recibe instruccion",$time);
+				$display("[%g] Agente: se recibe instruccion",$time);
 				test_agent_mbx.get(instruccion);
 				
 				case(instruccion)

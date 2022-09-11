@@ -19,26 +19,8 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 		@(posedge vif.clk);
 		vif.rst=1;;
 		@(posedge vif.clk);
-		
-		forever begin
-			trans_dut #(.ancho(ancho)) transaccion; //Crea un objeto para almacenar la transaccion siguiente
-			$display("[%g] El Driver espera una transaccion",$time);
-			@(posedge vif.clk);
-			agnt_drv_mbx.get(transaccion);		//espera a que haya algo en el mailbox bloqueando el avance
-			transaccion.print("Driver: Transaccion recibida");	//imprime lo que recibi?? 
-			$display("transacciones pendientes en mbx agnt-driver = %g",agnt_drv_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
-			
-			
-			////////////////////////////////////////////////////////////////////////////////////
-			/// Division de las instrucciones en diferentes fifos (colas)
-			////////////////////////////////////////////////////////////////////////////////////
-			subprocesos_entrada[transaccion.fuente].push_back(transaccion); //coloca la transaccion en la cola(fifo) correspondiente a la fuente
-				
-			
-			
-		end //end del forever	
-			
-		
+
+
 		fork		// inicia la generacion de hijos para cada interfaz
 			$display ("Driver: se inician los subprocesos");
 			
@@ -110,6 +92,53 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 			
 			
 		join_none
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+		forever begin
+			trans_dut #(.ancho(ancho)) transaccion; //Crea un objeto para almacenar la transaccion siguiente
+			$display("[%g] El Driver espera una transaccion",$time);
+			@(posedge vif.clk);
+			agnt_drv_mbx.get(transaccion);		//espera a que haya algo en el mailbox bloqueando el avance
+			transaccion.print("Driver: Transaccion recibida");	//imprime lo que recibi?? 
+			$display("transacciones pendientes en mbx agnt-driver = %g",agnt_drv_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
+			
+			
+			////////////////////////////////////////////////////////////////////////////////////
+			/// Division de las instrucciones en diferentes fifos (colas)
+			////////////////////////////////////////////////////////////////////////////////////
+			subprocesos_entrada[transaccion.fuente].push_back(transaccion); //coloca la transaccion en la cola(fifo) correspondiente a la fuente
+				
+			
+			
+		end //end del forever	
+			
+		
+		
 			
 		
 	endtask

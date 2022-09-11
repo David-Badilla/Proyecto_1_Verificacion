@@ -50,7 +50,7 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 	endfunction
 	
 	virtual task run();
-		$display("[%d] El ambiente fue inicializado",$time);
+		$display("[%g] El ambiente fue inicializado",$time);
 		fork
 			driver_inst.run();
 			agente_inst.run();

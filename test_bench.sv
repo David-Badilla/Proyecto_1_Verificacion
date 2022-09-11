@@ -42,7 +42,7 @@ module test_bench;
 		clk=0;
 		t0=new();
 		t0._if = _if;
-		t0.ambiente_instancia._if=_if;
+		t0.ambiente_instancia.driver_inst.vif=_if;
 		
 		fork
 			t0.run();
@@ -52,7 +52,7 @@ module test_bench;
 		
 	always @(posedge clk) begin
 		if ($time > 100000) begin
-			$display ("[%d] Test_bench: Tiempo limite en el test_bench alcanzado :D",$time);
+			$display ("[%g] Test_bench: Tiempo limite en el test_bench alcanzado :D",$time);
 			$finish;
 		
 		end	
