@@ -89,7 +89,7 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 						/////////////////////////////////////////////////
 						
 						if (vif.push==1)begin
-							recibido1.fuente=0; //En este caso la fuente es donde se recibe en mensaje se compara con el destino en teoria
+							recibido1.fuente=i; //En este caso la fuente es donde se recibe en mensaje se compara con el destino en teoria
 							recibido[i].destino=vif.dato[ancho-1:ancho-8] ; //Extrae la direccion del destino que se supone debe ir
 							recibido[i].dato=vif.dato[ancho-9:0] ; // Extrae del dato recibido de dut el destino original
 							recibido[i].tiempo_recibido=$time; 
