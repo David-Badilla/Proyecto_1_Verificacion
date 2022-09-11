@@ -1,5 +1,6 @@
-interface bus_if #(parameter drvrs = 4, parameter pckg_sz=16)(input bit clk, input bit rst);
+interface bus_if #(parameter drvrs = 4, parameter pckg_sz=16)(input bit clk);
 	//Entradas del bus
+	logic rst;
 	logic pndng [drvrs-1:0];
 	logic [pckg_sz-1:0] D_pop [drvrs-1:0];
 	

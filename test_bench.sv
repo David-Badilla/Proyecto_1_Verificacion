@@ -8,8 +8,7 @@
 `include "test.sv"
 
 
-`include "checker.sv"
-
+`include "checker.sv"	//HAY QUE ACOMODARLOS DONDE NO HAYA ERROR EN ORDEN
 
 `include "score_board.sv"
 

@@ -31,7 +31,7 @@ class test #(parameter ancho=16 , parameter drvrs=4);
 		//ambiente_instancia.scoreboard_inst.test_sb_mbx = test_sb_mbx;
 
 		ambiente_instancia.test_agnt_mbx = test_agnt_mbx;
-		ambiente_instancia.agente_inst = test_agnt_mbx;
+		ambiente_instancia.agente_inst.test_agent_mbx = test_agnt_mbx;
 
 		//Parametros del agente
 		ambiente_instancia.agente_inst.num_transacciones = num_transacciones;

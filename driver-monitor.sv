@@ -1,5 +1,6 @@
 
 class driver #(parameter drvrs = 4, parameter ancho = 16);
+	reg reset = 0 ;
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
 	trans_dut_mbx agnt_drv_mbx;
 	trans_dut_mbx drv_chkr_mbx;
@@ -16,7 +17,7 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 	task run();
 		$display("[%g] El driver fue inicializado",$time);
 		@(posedge vif.clk);
-		vif.rst=1;
+		vif.rst=1;;
 		@(posedge vif.clk);
 		
 		forever begin
@@ -63,7 +64,7 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 						end 
 						
 						
-						if (vif.pop==1) begin //Revisa la entrada pop
+						if (vif.pop[i]) begin //Revisa la entrada pop
 						
 							trans[i]=subprocesos_entrada[i].pop_front; //saca el primero en la cola	pop					
 							trans[i].tiempo_envio=$time;
@@ -88,10 +89,10 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 						//Revision si hay algun dato que salga (MONITOR)
 						/////////////////////////////////////////////////
 						
-						if (vif.push==1)begin
+						if (vif.push[i])begin
 							recibido[i].fuente=i; //En este caso la fuente es donde se recibe en mensaje se compara con el destino en teoria
-							recibido[i].destino=vif.D_push[ancho-1:ancho-8] ; //Extrae la direccion del destino que se supone debe ir
-							recibido[i].dato=vif.D_push[ancho-9:0] ; // Extrae del dato recibido de dut el destino original
+							recibido[i].destino=vif.D_push[i][ancho-1:ancho-8] ; //Extrae la direccion del destino que se supone debe ir
+							recibido[i].dato=vif.D_push[i][ancho-9:0] ; // Extrae del dato recibido de dut el destino original
 							recibido[i].tiempo_recibido=$time; 
 							recibido[i].print("Driver: transaccion en dispositivo recibida:");
 							drv_chkr_mbx.put(recibido[i]); //se coloca de una vez al mailbox
