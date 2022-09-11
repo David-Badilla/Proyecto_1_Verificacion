@@ -67,7 +67,7 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 						
 							trans[i]=subprocesos_entrada[i].pop_front; //saca el primero en la cola	pop					
 							trans[i].tiempo_envio=$time;
-							trans[i].print("[%d] Driver: transaccion dispositivo %d enviada",$time,i);
+							trans[i].print("Driver: transaccion dispositivo enviada");
 							while(espera[i] < trans[i].retardo)begin 	//manejo del retardo 
 								@(posedge vif.clk);
 								espera[i]=espera[i]+1;
@@ -89,11 +89,11 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 						/////////////////////////////////////////////////
 						
 						if (vif.push==1)begin
-							recibido1.fuente=i; //En este caso la fuente es donde se recibe en mensaje se compara con el destino en teoria
-							recibido[i].destino=vif.dato[ancho-1:ancho-8] ; //Extrae la direccion del destino que se supone debe ir
-							recibido[i].dato=vif.dato[ancho-9:0] ; // Extrae del dato recibido de dut el destino original
+							recibido[i].fuente=i; //En este caso la fuente es donde se recibe en mensaje se compara con el destino en teoria
+							recibido[i].destino=vif.D_push[ancho-1:ancho-8] ; //Extrae la direccion del destino que se supone debe ir
+							recibido[i].dato=vif.D_push[ancho-9:0] ; // Extrae del dato recibido de dut el destino original
 							recibido[i].tiempo_recibido=$time; 
-							recibido[i].print("[%d] Driver: transaccion en dispositivo %d recibida:",$time,i);
+							recibido[i].print("Driver: transaccion en dispositivo recibida:");
 							drv_chkr_mbx.put(recibido[i]); //se coloca de una vez al mailbox
 
 						end

@@ -37,7 +37,7 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 		driver_inst.agnt_drv_mbx	= agnt_drv_mbx;
 		driver_inst.drv_chkr_mbx	= drv_chkr_mbx;
 		
-		agente_inst.test_agnt_mbx	= test_agnt_mbx;
+		agente_inst.test_agent_mbx	= test_agnt_mbx;
 		agente_inst.agnt_drv_mbx	= agnt_drv_mbx;
 		
 		

@@ -1,12 +1,12 @@
 
 
 class agente #(parameter ancho=16);
-	trans_dut_mbx agnt_drv_mbx;  	//mbx agente --> driver
-	instrucciones_agente_mbx test_agent_mbx; //mbx test --> agente
+	trans_dut_mbx agnt_drv_mbx;  	//mbx agente - driver
+	instrucciones_agente_mbx test_agent_mbx; //mbx test - agente
 	
 	int num_transacciones;
 	int max_retardo;
-	
+	bit [7:0] broadcast_id; //*****COLOCAR LUEGO COMO PARAMETRO RECIBIDO***
 	instrucciones_agente instruccion;
 	trans_dut #(.ancho(ancho)) transaccion;
 	
