@@ -1,9 +1,9 @@
 class ambiente #(parameter ancho=16 , parameter drvrs=4);
 	//-----------Componentes del ambiente---------------------------------
 	driver #(.ancho(ancho), .drvrs(drvrs)) driver_inst;
-	agente #(.ancho(ancho)) agente_inst;
-	//score_board #(.ancho(ancho)) scoreboard_inst;
-	//Checker #(.ancho(ancho)) Checker_inst; //OJO CON LA MAYUSCULA
+	agente #(.ancho(ancho), .drvrs(drvrs)) agente_inst;
+	//score_board #(.ancho(ancho), .drvrs(drvrs)) scoreboard_inst;
+	//Checker #(.ancho(ancho), .drvrs(drvrs)) Checker_inst; //OJO CON LA MAYUSCULA
 	
 	
 	//-----------Declaracion de la interface que conecta el dut-----------

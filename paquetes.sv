@@ -6,7 +6,7 @@ typedef enum {generico, broadcast, reset} tipo_trans;
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Paquete TransDUT (pck1) Agente/generador ---> Driver/Monitor y Diver/Monitor ---> Checker
 ///////////////////////////////////////////////////////////////////////////////////////////
-class trans_dut #(parameter ancho=16);
+class trans_dut #(parameter ancho=16, parameter drvrs=4);
 	rand tipo_trans tipo;
 	rand bit [ancho-9:0] dato; //-6 para los 5 bits que hay que concatenar de direccion
 	rand bit [7:0] fuente;
@@ -17,8 +17,11 @@ class trans_dut #(parameter ancho=16);
 	int max_retardo;	//Retardo maximo de 20
 	
 	constraint const_retardo {retardo<max_retardo; retardo>0;}
-	constraint const_destino {destino != fuente;} 			 // Restriccion del destino 
-	
+	constraint const_destino {destino != fuente; destino<drvrs; destino>=0;} 			 // Restriccion del destino 
+	constraint const_fuente {fuente<drvrs;fuente>=0;} //la fuente debe existir 
+
+
+
 	function new (tipo_trans tpo = generico, bit [ancho-9:0] dto =0 , bit [7:0] fte = 0 , bit [7:0] dstn=1, int ret=0, int t_envio=0,int t_recibido=0 , int max_ret=20);
 		this.tipo = tpo;
 		this.dato = dto; 
@@ -33,7 +36,7 @@ class trans_dut #(parameter ancho=16);
 	
 	
 	function void print(string tag ="");
-		$display("[%g] %s Tiempo-Envio=%g Tiempo-Recibido=%g Tipo=%s Retardo=%g Fuente=0x%d Destino=0x%d dato=0x%h", $time,tag,this.tiempo_envio, this.tiempo_recibido, this.tipo, this.retardo, this.fuente, this.destino, this.dato);
+		$display("[%g] %s Tiempo-Envio=%g Tiempo-Recibido=%g Tipo=%s Retardo=%g Fuente=%g Destino=%g dato=0x%g", $time,tag,this.tiempo_envio, this.tiempo_recibido, this.tipo, this.retardo, this.fuente, this.destino, this.dato);
 		
 	endfunction
 		 
@@ -64,7 +67,7 @@ class trans_sb #(parameter ancho = 16);
 	endtask
 	
 	function print(string tag); //Funcion para imprimir el contenido del objeto Trans_sb
-		$display ("[%g] %s Dato=0x%h Fuente=%d Destino=%d T_envio=%g T_recibido=%g Latencia=%g", 
+		$display ("[%g] %s Dato=0x%h Fuente_Recibido=%g Destino_teorico=%g T_envio=%g T_recibido=%g Latencia=%g", 
 			$time,
 			tag,
 			this.dato_enviado,
