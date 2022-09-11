@@ -8,9 +8,9 @@ typedef enum {generico, broadcast, reset} tipo_trans;
 ///////////////////////////////////////////////////////////////////////////////////////////
 class trans_dut #(parameter ancho=16);
 	rand tipo_trans tipo;
-	rand bit [ancho-6:0] dato; //-6 para los 5 bits que hay que concatenar de direccion
-	rand bit [4:0] fuente;
-	rand bit [4:0] destino;
+	rand bit [ancho-9:0] dato; //-6 para los 5 bits que hay que concatenar de direccion
+	rand bit [7:0] fuente;
+	rand bit [7:0] destino;
 	rand int retardo;
 	int tiempo_envio;
 	int tiempo_recibido;
@@ -19,7 +19,7 @@ class trans_dut #(parameter ancho=16);
 	constraint const_retardo {retardo<max_retardo; retardo>0;}
 	constraint const_destino {destino != fuente;} 			 // Restriccion del destino 
 	
-	function new (tipo_trans tpo = generico, bit [ancho-6:0] dto =0 , bit [4:0] fte = 0 , bit [4:0] dstn=1, int ret=0, int t_envio=0,int t_recibido=0 , int max_ret=20);
+	function new (tipo_trans tpo = generico, bit [ancho-9:0] dto =0 , bit [7:0] fte = 0 , bit [7:0] dstn=1, int ret=0, int t_envio=0,int t_recibido=0 , int max_ret=20);
 		this.tipo = tpo;
 		this.dato = dto; 
 		this.fuente = fte;
@@ -43,9 +43,9 @@ endclass
 // Definicion del paquete Trans_sb Checker--> ScoreBoard 
 /////////////////////////////////////////////////////////////////////
 class trans_sb #(parameter ancho = 16);
-	bit [ancho-6:0] dato_enviado;
-	bit [4:0] Fuente;
-	bit [4:0] Destino;
+	bit [ancho-9:0] dato_enviado;
+	bit [7:0] Fuente;
+	bit [7:0] Destino;
 	int tiempo_envio;
 	int tiempo_recibido;
 	int latencia;
@@ -84,12 +84,12 @@ endclass
 ///////////////////////////////////////////////
 // Definicion de la transaccion pck4 Test-->Agente/Generador usando typedef 
 ///////////////////////////////////////////////
-typedef enum {genericos, broadcast_inst , Rst_aleatorio, Completo} instrucciones_agente; //completo es todo junto ***Se le cambio el nombre al broadcast porque ya habia uno igual***
+typedef enum {genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica} instrucciones_agente; //completo es todo junto ***Se le cambio el nombre al broadcast porque ya habia uno igual***
 
 ///////////////////////////////////////////////
 // Transaccion pck5 Test --> Scoreboard
 ///////////////////////////////////////////////
-typedef enum {retraso_promedio, bwmax, bwmin, reporte_completo} solicutud_sb;
+typedef enum {retraso_promedio, bwmax, bwmin, reporte_completo} solicitud_sb;
 
 
 
@@ -102,7 +102,7 @@ typedef mailbox #(trans_dut) trans_dut_mbx;  //agente/generador ===> driver/moni
 typedef mailbox #(trans_sb) trans_sb_mbx;  //Checker ===> Scoreboard
 
 typedef mailbox #(instrucciones_agente) instrucciones_agente_mbx;  //Test===> Agente/Generador
-typedef mailbox #(solicutud_sb) solicutud_sb_mbx;//Test===> Scoreboard
+typedef mailbox #(solicitud_sb) solicitud_sb_mbx;//Test===> Scoreboard
 
 
 
