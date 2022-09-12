@@ -118,7 +118,74 @@ typedef mailbox #(solicitud_sb) solicitud_sb_mbx;//Test===> Scoreboard
 	
 	
 	
+
+
+
+
+
+
+class fifo #(parameter pile_size = 5, parameter pckg_sz = 32);
+	bit fifo_full;		//Bandera de lleno
+	bit pndg;			//Bandera de vacio
+	bit [pckg_sz-1:0] pile [$:pile_size-1];   
 	
+	//Inicializacion de las banderas
+	function new();
+		this.pndg = 0;
+		this.fifo_full = 0;
+	endfunction
+	
+	//Funcion de PUSH
+  	function void push(bit [pckg_sz-1:0] mensaje, string tag = "");
+      	//Verifica si se lleno el FIFO
+      	if (pile.size() == pile_size) begin
+			this.fifo_full = 1;
+		end
+      
+		//Asercion si se hizo
+		v_push: assert (!this.fifo_full) begin
+          	$display("[Pass] PUSH cuando FIFO %s NO esta llena", tag);
+		end else begin
+          	$display("[Fail] PUSH cuando FIFO %s SI esta llena", tag);
+		end
+		
+      	pile.push_front(mensaje);
+		this.pndg = 1;
+	endfunction
+	
+	//Funcion de POP
+  	function bit[pckg_sz-1:0] pop(string tag = "");
+		//Asercion de que no este vacio el FIFO
+		v_pop: assert (pile.size() != 0) begin
+          	$display("[Pass] POP cuando FIFO %s NO esta vacia", tag);
+		end else begin
+          	$display("[Fail] POP cuando FIFO %s SI esta vacia", tag);
+		end	
+		//Hace Pop el FIFO
+		if(pile.size() > 0) begin
+			if(pile.size() == 1) begin			
+          		this.pndg = 0; 		
+        	end
+			return pile.pop_back;
+		end
+		
+		this.fifo_full = 0;
+	endfunction
+	
+  	//Funcion para saber si la cola esta vacia
+  	function bit get_pndg();
+      	if(pile.size() == 0) begin
+          	this.pndg = 0;
+        end
+    	return this.pndg;
+    endfunction;
+  	
+  	//Funcion para obtener tamaño de cola
+  	function int get_size();
+      return this.pile.size();
+    endfunction;
+
+endclass
 	
 	
 	

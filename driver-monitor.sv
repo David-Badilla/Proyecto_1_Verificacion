@@ -22,11 +22,13 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 		@(posedge vif.clk);
 		vif.rst=0;
 		@(posedge vif.clk);
+		@(posedge vif.clk);
 		
-		for (int i = 0; i < drvrs; i++) begin 
+		for (int i = 1; i < drvrs; i++) begin 
 			Retardoins[i]=new;
       		trans[i] = new;
 			vif.pndng[0][i]=0;
+			espera[i]=0;
 			//vif.D_pop[0][i]={4'b0001,4'b0010};
 
 	    end
@@ -65,83 +67,100 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 						// inicia la generacion de hijos para cada interfaz
 			 
 			begin //begin hijo 2 dispositivos 
-				for (int j=0;j<drvrs;j++)begin  //-----crea los hijos que diga drvrs---------------
+				for (int j=1;j<drvrs;j++)begin  //-----crea los hijos que diga drvrs---------------
 					automatic int i=j;
 					fork
 						
 						begin //hijo Retrasos
 							@(posedge vif.clk);
 							forever begin
-									espera[i]=0;
+								espera[i]=0;
+								Retardoins[i]=new;
 								if(subprocesos_salida[i].size()>0)begin
 									Retardoins[i]=subprocesos_salida[i].pop_front;
-									while(espera[i] < Retardoins[i].retardo)begin 	//manejo del retardo 
+									while(espera[i] <= Retardoins[i].retardo)begin 	//manejo del retardo 
 										@(posedge vif.clk);
 										espera[i]=espera[i]+1;								
 										if(espera[i]==Retardoins[i].retardo)begin
-											Retardoins[i].print("Driver: transaccion dispositivo enviada");
-											Retardoins[i].tiempo_envio=$time;										
+											Retardoins[i].tiempo_envio=$time;
+											Retardoins[i].print("Driver: Retardo simulado enviado al dut");
+																		
 											subprocesos_entrada[i].push_back(Retardoins[i]);						
+											break;
 										end 	
 									end //end while
 								end else begin
-									Retardoins[i]=new;
+									//Retardoins[i]=new;
 								end
-								//@(posedge vif.clk);
 								@(posedge vif.clk);
+								//@(posedge vif.clk);@(posedge vif.clk);
 								
 							end//forever
 						end //hijo
 
 			
-						begin // -----------hijo pop y pndng -------------
+						begin // -----------hijo pop  -------------
 							$display ("Hijo %g iniciado",i);
 							@(posedge vif.clk);
 							//vif.D_pop[0] [i]<={ancho{1'b0}};
+								if(vif.pndng[0][i]==0)begin
+									trans[i]=new;
+									transa[i]=0;
+									vif.D_pop[0][i]=transa[i];
+									$display("	D_pop = %g",vif.D_pop[0][i]);
+								end
 							forever begin
 									
 									//Manejo del pop
-									@(posedge vif.pop[0][i]);
+									//$display("**[%g]pop disp[%g]=%g **",$time,i,vif.pop[0][i]);
+									@(posedge vif.clk);
+									
 									if (vif.pop[0][i]) begin
-										//vif.D_pop[0][i]={ancho{1'b0}};
-										trans[i]=new;
-										//transa={ancho{1'b0}};
-										trans[i]=subprocesos_entrada[i].pop_front; //saca el primero en la cola	pop										
-										transa[i]={trans[i].destino,trans[i].dato};
-										trans[i].print("	Dato en D_pop");
-										$display("			Dpop concat dest %b dat= %b = %b",trans[i].destino,trans[i].dato,transa[i]);
+										$display("**[%g]pop disp[%g]=%g **",$time,i,vif.pop[0][i]);
 
+						
+										trans[i]=subprocesos_entrada[i].pop_front; //saca el primero en la cola temporal
+										transa[i]={trans[i].destino,trans[i].dato};										
 										vif.D_pop[0][i]=transa[i];
+													
+										trans[i].print("	Dato en D_pop");
+										$display("			Dpop concat dest %b dat= %b :%b",trans[i].destino,trans[i].dato,transa[i]);
+				//@(posedge vif.clk);@(posedge vif.clk);
+										@(posedge vif.clk);
 										$display("		Se hace un pop cantidad de datos restantes en cola[%g] =",i,subprocesos_entrada[i].size());
 										$display("		Dipositivo %g",i);
 										if (subprocesos_entrada[i].size() > 0)begin //Revisa si quedan pendientes
 											vif.pndng[0][i]=1;
+											//@(posedge vif.clk);@(posedge vif.clk);
 										end else begin
 											vif.pndng[0][i]=0;
+											//@(posedge vif.clk);@(posedge vif.clk);
 										end
-									end 
+									end else begin	
+										//vif.D_pop[0][i]=0;
+									end
 									
-						
-								
-								//@(posedge vif.clk);
-								
+
+								 
+
+
 							end//end forever
 						end//end hijo
 
 						begin//manejo del pending
 							//@(posedge vif.clk);
-							//vif.pndng[0][i]=0;
 							forever begin
-
 								if (subprocesos_entrada[i].size() > 0) begin 
-										vif.pndng[0][i]=1;	
+									vif.pndng[0][i]=1;							
+									//$display("		pndng disp[%g] = %g ",i,vif.pndng[0][i]);	
+								end	else begin 
+									vif.pndng[0][i]=0;
 
-									end	else begin 
-										vif.pndng[0][i]=0;
-									end 
+								end	
 								@(posedge vif.clk);
-
+	
 							end
+							
 						end
 
 
@@ -149,13 +168,14 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 						
 						
 						begin //Hijo Monitor
-							//@(posedge vif.clk);
+							@(posedge vif.clk);
 							forever begin	
 								/////////////////////////////////////////////////
 								//Revision si hay algun dato que salga (MONITOR)
 								/////////////////////////////////////////////////
-
-									@(vif.push[0][i]); //bloquea hasta que haya un push
+									$display ("PUSH =%g en Disp[%g]",vif.push[0][i],i);
+									@( vif.push[0][i]); //bloquea hasta que haya un push
+									//@(posedge vif.clk);
 									$display ("PUSH =1 en Disp[%g]",i);
 									recibido[i]=new;
 									recibido[i].fuente=i; //En este caso la fuente es donde se recibe en mensaje se compara con el destino en teoria
@@ -165,16 +185,15 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 									recibido[i].print("Driver: transaccion recibida y enviada al checker:");
 											$display("En dispositivo %g",i);
 									drv_chkr_mbx.put(recibido[i]); //se coloca de una vez al mailbox
-
-								
-							end	//end del forever de cada subproceso			
+									//@(posedge vif.clk);
+							end	//end del forever 			
 						end //end el hijo hijo 
 					join_none
 					
 				end //end del for	
 				//wait fork;
 			end
-		join
+		join_none
 	
 			
 		
