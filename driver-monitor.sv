@@ -9,6 +9,7 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 	
 	
 	trans_dut #(.ancho(ancho), .drvrs(drvrs)) trans[drvrs-1:0]; //Variables temporales para almacenar cada transaccion de la fifo(queue)
+	trans_dut #(.ancho(ancho), .drvrs(drvrs)) Retardoins[drvrs-1:0];
 	trans_dut #(.ancho(ancho), .drvrs(drvrs)) recibido[drvrs-1:0];
 	
 	int espera[drvrs-1:0];
@@ -18,15 +19,18 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 		vif.rst=1;;
 		@(posedge vif.clk);
 
-
+		for (int i = 0; i < drvrs; i++) begin 
+			Retardoins[i]=new;
+      		trans[i] = new;
+	    end
 		//$display ("Driver: se inician los subprocesos");
 		
 			
 		fork 
-			begin
+			begin //Hijo para rebicion de transaccion entrante de mbx
 				@(posedge vif.clk);
 				forever begin
-					trans_dut #(.ancho(ancho), .drvrs(drvrs)) transaccion =new; //Crea un objeto para almacenar la transaccion siguiente
+					trans_dut #(.ancho(ancho), .drvrs(drvrs)) transaccion; //Crea un objeto para almacenar la transaccion siguiente
 					$display("[%g] El Driver espera una transaccion",$time);
 					//@(posedge vif.clk);
 					agnt_drv_mbx.get(transaccion);		//espera a que haya algo en el mailbox bloqueando el avance
@@ -42,9 +46,8 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 					/// Division de las instrucciones en diferentes fifos (colas)
 					////////////////////////////////////////////////////////////////////////////////////
 					
-					subprocesos_entrada[transaccion.fuente].push_back(transaccion); //coloca la transaccion en la cola(fifo) correspondiente a la fuente
+					subprocesos_salida[transaccion.fuente].push_back(transaccion); //coloca la transaccion en la cola(fifo) correspondiente a la fuente
 					$display("		Cantidad de datos en la cola disp[%g]: %g",transaccion.fuente,subprocesos_entrada[transaccion.fuente].size());
-					$display("					POP? = %g",vif.pop[0][0]);
 					@(posedge vif.clk);
 					
 				end //end del forever		
@@ -58,65 +61,63 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 				for (int j=0;j<drvrs;j++)begin  //-----crea los hijos que diga drvrs---------------
 					automatic int i=j;
 					fork
-						
-						
+						/*begin
+							forever begin
+								@(posedge vif.clk);
+								
+								$display("					POP? dip[%g]= %g",i,vif.pop[0][i]);
+								
+							end
+						end*/
 						begin //hijo Retrasos
 							@(posedge vif.clk);
 							forever begin
 									espera[i]=0;
-									while(espera[i] < trans[i].retardo)begin 	//manejo del retardo 
-										//trans[i]=new;
+								if(subprocesos_salida[i].size()>0)begin
+									Retardoins[i]=subprocesos_salida[i].pop_front;
+									while(espera[i] < Retardoins[i].retardo)begin 	//manejo del retardo 
+										
 										@(posedge vif.clk);
 										espera[i]=espera[i]+1;
 										
-										if(espera[i]==trans[i].retardo)begin
+										if(espera[i]==Retardoins[i].retardo)begin
 
-											trans[i].print("Driver: transaccion dispositivo enviada");
+											Retardoins[i].print("Driver: transaccion dispositivo enviada");
+											subprocesos_entrada[i].push_back(Retardoins[i]);
 											$display("		Pop en dipositivo %g",i);
-											trans[i]=subprocesos_entrada[i].pop_front; //saca el primero en la cola	pop					
-											trans[i].tiempo_envio=$time;
+										
+											//trans[i].tiempo_envio=$time;
 											//SE prodria enviar acá trans[i] al checker como un tipo de referencia a la transaccion enviada											
 										end else begin
-											trans[i].dato<=0;
-											trans[i].destino<=0;
+											//trans[i].dato<=0;
+											//trans[i].destino<=0;
 										end	
 									end //end while
-					
+								end
 								@(posedge vif.clk);
+								
 							end//forever
 						end //hijo
-						
-						
-						
-						
-						
-						
+
+			
 						begin // -----------hijo pop y pndng -------------
 							$display ("Hijo %g iniciado",i);
 							@(posedge vif.clk);
 							forever begin
-								if(trans[i].tipo==reset) begin //Revisa si es reset
-										@(posedge vif.clk);
-										vif.rst=1;
-										@(posedge vif.clk);
-										@(posedge vif.clk);
-										vif.rst=0;
-								end else begin
+							
 									//Manejo del pop
 									if (vif.pop[0][i]) begin
-										
+										trans[i]=subprocesos_entrada[i].pop_front; //saca el primero en la cola	pop					
 										vif.D_pop[0] [i]={trans[i].destino,trans[i].dato};
 										$display("Se hace un pop cantidad de datos restantes en cola",subprocesos_entrada[i].size());
 										$display("		Dipositivo %g",i);
-										if (subprocesos_entrada[i].size() > 0)begin
+										if (subprocesos_entrada[i].size() > 0)begin //Revisa si quedan pendientes
 											vif.pndng[0][i]<=1;
 										end else  vif.pndng[0][i]<=0;
 									end else begin
 										vif.D_pop[0] [i]<={ancho{1'b0}};
 									end
-									
-									
-									
+															
 									//manejo del pending
 									if (subprocesos_entrada[i].size() > 0) begin 
 										vif.pndng[0][i]<=1;	
@@ -125,14 +126,20 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 									  vif.pndng[0][i]<=0;
 									end 
 								
-								end//end else
+							
 								
-								
+								@(posedge vif.clk);
 							end//end forever
 						end//end hijo
+
+
+						
+
+
+
 						
 						
-						begin
+						begin //Hijo Monitor
 							@(posedge vif.clk);
 							forever begin	
 								/////////////////////////////////////////////////
@@ -159,7 +166,7 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 				end //end del for	
 				//wait fork;
 			end
-		join_none
+		join_any
 	
 			
 		
