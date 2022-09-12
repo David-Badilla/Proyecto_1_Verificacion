@@ -58,32 +58,11 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 				for (int j=0;j<drvrs;j++)begin  //-----crea los hijos que diga drvrs---------------
 					automatic int i=j;
 					fork
-						begin // Define el inicio del hijo actual
-							$display ("Hijo %g iniciado",i);
+						
+						
+						begin //hijo Retrasos
 							@(posedge vif.clk);
 							forever begin
-								
-								//vif.pndng[0][i]=0;		//reinicio de variables
-								//vif.D_pop[0][i]=0;
-								//vif.rst=0;
-								//espera[i]=0;
-								
-								@(posedge vif.clk);
-								if (subprocesos_entrada[i].size() > 0) begin //Revisa si hay algo en cola para activar la bandera de pendiente 
-									vif.pndng[0][i]=1;	
-									//$display("		Pending en dipositivo [%g] = %g",i,vif.pndng[0][i]);
-								end	else begin 
-								  vif.pndng[0][i]=0;
-									//$display("		Pending en dipositivo [%g] = %g",i,vif.pndng[0][i]);
-								end 
-								
-							end
-						end
-						begin
-							@(posedge vif.clk);
-							forever begin
-								if (vif.pop[0][i]==1) begin //Revisa la entrada pop
-									$display("		Pop en dipositivo %g",i);
 									espera[i]=0;
 									while(espera[i] < trans[i].retardo)begin 	//manejo del retardo 
 										//trans[i]=new;
@@ -91,36 +70,67 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 										espera[i]=espera[i]+1;
 										
 										if(espera[i]==trans[i].retardo)begin
+
+											trans[i].print("Driver: transaccion dispositivo enviada");
 											$display("		Pop en dipositivo %g",i);
 											trans[i]=subprocesos_entrada[i].pop_front; //saca el primero en la cola	pop					
-											$display("Se hace un pop cantidad de datos restantes en cola",subprocesos_entrada[i].size());
 											trans[i].tiempo_envio=$time;
-											trans[i].print("Driver: transaccion dispositivo enviada");
-											vif.D_pop[0][i]={trans[i].destino,trans[i].dato}; //concatenando el destino y dato que necesita recibir el dut ??Poner fuera del while?
-											$display("		Dipositivo %g",i);
+											//SE prodria enviar acá trans[i] al checker como un tipo de referencia a la transaccion enviada											
 										end else begin
-											//trans[i]=new;
-										end
-										
-										
-										
-									end 
-									
-									
-									if(trans[i].tipo==reset) begin
+											trans[i].dato<=0;
+											trans[i].destino<=0;
+										end	
+									end //end while
+					
+								@(posedge vif.clk);
+							end//forever
+						end //hijo
+						
+						
+						
+						
+						
+						
+						begin // -----------hijo pop y pndng -------------
+							$display ("Hijo %g iniciado",i);
+							@(posedge vif.clk);
+							forever begin
+								if(trans[i].tipo==reset) begin //Revisa si es reset
 										@(posedge vif.clk);
 										vif.rst=1;
 										@(posedge vif.clk);
 										@(posedge vif.clk);
 										vif.rst=0;
+								end else begin
+									//Manejo del pop
+									if (vif.pop[0][i]) begin
+										
+										vif.D_pop[0] [i]={trans[i].destino,trans[i].dato};
+										$display("Se hace un pop cantidad de datos restantes en cola",subprocesos_entrada[i].size());
+										$display("		Dipositivo %g",i);
+										if (subprocesos_entrada[i].size() > 0)begin
+											vif.pndng[0][i]<=1;
+										end else  vif.pndng[0][i]<=0;
+									end else begin
+										vif.D_pop[0] [i]<={ancho{1'b0}};
 									end
 									
-								end	//else begin
-									//	vif.D_pop[0][i]={ancho{1'b0}};
-									//end								
-								@(posedge vif.clk);
-							end//forever
-						end //hijo
+									
+									
+									//manejo del pending
+									if (subprocesos_entrada[i].size() > 0) begin 
+										vif.pndng[0][i]<=1;	
+
+									end	else begin 
+									  vif.pndng[0][i]<=0;
+									end 
+								
+								end//end else
+								
+								
+							end//end forever
+						end//end hijo
+						
 						
 						begin
 							@(posedge vif.clk);
@@ -128,11 +138,11 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 								/////////////////////////////////////////////////
 								//Revision si hay algun dato que salga (MONITOR)
 								/////////////////////////////////////////////////
-									if(vif.push[0][i]==1) begin
-										$display ("PUSH =1");
-									end
-									@(posedge vif.push[0][i]);
-								
+							
+										
+						
+									@(posedge vif.push[0][i]); //bloquea hasta que haya un push
+									$display ("PUSH =1");
 									recibido[i]=new;
 									recibido[i].fuente=i; //En este caso la fuente es donde se recibe en mensaje se compara con el destino en teoria
 									recibido[i].destino=vif.D_push[0][i][ancho-1:ancho-8] ; //Extrae la direccion del destino que se supone debe ir
@@ -142,7 +152,7 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 											$display("En dispositivo %g",i);
 									drv_chkr_mbx.put(recibido[i]); //se coloca de una vez al mailbox
 
-								//end //if
+								
 							end	//end del forever de cada subproceso			
 						end //end el hijo hijo 
 					join_none
