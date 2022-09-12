@@ -29,7 +29,7 @@ module test_bench;
 	
 	//Instanciacion y conexion con el dut con parametros y la interfaz
 	bs_gnrtr_n_rbtr #(.drvrs(drvrs),.pckg_sz(ancho), .broadcast(broadcast_indi)) 
-		         DUT(.clk(clk/*_if.clk*/),
+		         DUT(.clk(clk),
 		             .reset(_if.rst),
 		             .pndng(_if.pndng),
 		             .push(_if.push),

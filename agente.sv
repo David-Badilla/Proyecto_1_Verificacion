@@ -20,7 +20,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 	
 	
 	function new;
-		num_transacciones=2;
+		num_transacciones=1;
 		max_retardo=20;
 		broadcast_id = {8{1'b1}};
 	endfunction
@@ -29,7 +29,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 	task run;
 		$display("[%g] El Agente fue inicializado",$time);
 		forever begin
-			#1
+			#2
 			if(test_agent_mbx.num() > 0)begin
 				$display("[%g] Agente: se recibe instruccion",$time);
 				test_agent_mbx.get(instruccion);

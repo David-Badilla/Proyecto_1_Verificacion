@@ -17,8 +17,8 @@ class trans_dut #(parameter ancho=16, parameter drvrs=4);
 	int max_retardo;	//Retardo maximo de 20
 	
 	constraint const_retardo {retardo<max_retardo; retardo>0;}
-	constraint const_destino {destino != fuente; destino<drvrs; destino>=0;} 			 // Restriccion del destino 
-	constraint const_fuente {fuente<drvrs;fuente>=0;} //la fuente debe existir 
+	constraint const_destino {destino != fuente; destino<drvrs; destino>0;} 			 // Restriccion del destino 
+	constraint const_fuente {fuente<drvrs;fuente>0;} //la fuente debe existir 
 
 
 
