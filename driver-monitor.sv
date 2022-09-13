@@ -1,4 +1,4 @@
-
+/*
 class driver #(parameter drvrs = 4, parameter ancho = 16);
 
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
@@ -200,4 +200,162 @@ class driver #(parameter drvrs = 4, parameter ancho = 16);
 	endtask
 
 
+endclass*/
+
+
+
+
+
+
+class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=1000000);
+	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
+	trans_dut_mbx agnt_drv_mbx;
+	trans_dut_mbx drv_chkr_mbx;
+	trans_dut #(.ancho(ancho), .drvrs(drvrs)) subprocesos_entrada[drvrs-1:0][$]; //Cola de tipo trans dut para cada dispositivo
+	trans_dut #(.ancho(ancho), .drvrs(drvrs)) subprocesos_salida[drvrs-1:0][$]; //No utilizada 
+	
+	
+	trans_dut #(.ancho(ancho), .drvrs(drvrs)) trans[drvrs-1:0]; //Variables temporales para almacenar cada transaccion de la fifo(queue)
+	trans_dut #(.ancho(ancho), .drvrs(drvrs)) Retardoins[drvrs-1:0];
+	trans_dut #(.ancho(ancho), .drvrs(drvrs)) recibido[drvrs-1:0];
+	 bit [ancho-1:0] transa[drvrs-1:0];
+	int espera[drvrs-1:0];
+	bit [ancho-1:0] temp;
+	event drvr_done;  //Evento para registrar finalizacion del driver 
+    event msj_sent;
+  //Variables para FIFO
+  mailbox fifo_mbox[drvrs-1:0]; //Mailboxes para pasar datos a los procesos hijos
+    fifo #(.pile_size(pile_size), .pckg_sz(ancho)) cola [drvrs-1:0]; //Se instancia la clase de fifo
+	fifo #(.pile_size(pile_size), .pckg_sz(ancho)) fifo_mntr [drvrs-1:0]; // FIFO de recepcion 
+  bit cmplt;
+  
+  //Envio a checker
+    mailbox chkr_mbox;
+  
+  task run();
+        
+        $display("[%0t] [Driver] Iniciando...", $time);
+    
+        //Inicializacion de mailboxes y FIFOs
+    for (int i = 0; i < drvrs; i++) begin 
+      fifo_mbox[i] = new();
+      cola[i] = new();
+    end
+    
+    fork
+      //Proceso de recepcion de mensajes 
+		begin
+			@(posedge vif.clk);
+				forever begin
+					trans_dut #(.ancho(ancho),.drvrs(drvrs)) msj;
+                    $display("[%g] [Driver] Esperando mensaje...", $time);
+          
+					//Espera a recibir un mensaje del agente
+					agnt_drv_mbx.get(msj);
+					msj.print("Driver"); //Desplega informacion de mensaje
+					//Ingresa msj al FIFO
+					fifo_mbox[msj.fuente].put(msj);
+					@(posedge vif.clk);
+					$display("[%g] Driver Mensaje enviado", $time);
+					->drvr_done;
+					
+				end //end del forever	
+		end
+      
+      //Proceso de los FIFO 
+      begin 
+        // Generacion de subprocesos
+        for (int j = 0; j < drvrs; j++) begin
+                    automatic int jj = j;
+					fifo_mntr [jj] = new(); 
+          fork 
+            //Proceso de recepcion de datos del DRIVER
+            begin
+              automatic bit [ancho-1:0] paquete; //Variable de datos para el fifo
+              int delay = 0; //variable para implementar retraso
+                            @(posedge vif.clk);
+                            forever begin
+                                trans_dut #(.ancho(ancho),.drvrs(drvrs)) msj2;
+                                //Trans_scr_chckr #(.pckg_sz(ancho)) msj2chkr = new();
+                                delay = 0;  
+                              
+                                @(posedge vif.clk);
+                                fifo_mbox[jj].get(msj2); //toma el dato
+                                paquete[ancho-1:ancho-8] = msj2.destino;
+                                paquete[ancho-9:0] = msj2.dato;
+                              
+                				//Ciclo de retraso
+                                while(delay <= msj2.retardo)begin
+                                  	if(delay >= msj2.retardo)begin
+                                       
+                                        cola[jj].push(paquete); //insercion a la cola
+                                        //drv_chkr_mbx.put(msj2chkr);
+                                        //->msj_sent;
+                                        break;  
+                  					end
+                                    @(posedge vif.clk);
+                                    delay =  delay + 1;
+                				end
+                            end
+                        end
+            
+                        begin
+                            bit [ancho-1:0] paquete = {ancho-1{1'b0}};
+                            @(posedge vif.clk);
+                          forever begin
+                            	
+                                @(posedge vif.clk);
+                                //Manejo de pop                            
+                            	if(vif.pop[0][jj])begin
+                              		vif.D_pop[0][jj] = cola[jj].pop("INTERFASE DRIVER");
+                                  	vif.pndng[0][jj] <= cola[jj].get_pndg();
+						        end else begin
+                                  	vif.D_pop[0][jj] <= cola[jj].pile[$]; 
+                                end
+                                //manejo de bandera de pndng
+                                if(cola[jj].get_pndg() == 1) begin
+                                  	vif.pndng[0][jj] <= 1;
+                                end else begin
+                                  	vif.pndng[0][jj] <= 0;
+                                end
+                            
+                            end
+                        end
+
+
+
+						begin                                  
+              				@(posedge vif.clk);
+                			forever begin                 
+                              	
+                              	@(vif.push[0][jj]);
+                              	//PUSH
+                        		//if(vif.push[0][idx])begin
+                                  	fifo_mntr[jj].push(vif.D_push[0][jj], "[MONITOR]");
+                        		//end
+                            end
+                        end
+                      	begin
+                          	@(posedge vif.clk);
+                        	forever begin
+                              	//POP
+                              	trans_dut #(.ancho(ancho)) msj = new();
+                              	@(posedge vif.clk);
+                        		if(fifo_mntr[jj].get_pndg())begin
+                                  	temp = fifo_mntr[jj].pop("[MONITOR]");
+                            		msj.dato = temp[ancho-9:0];
+                            		msj.tiempo_recibido = $time;
+                            		msj.fuente = jj;
+                           	 		drv_chkr_mbx.put(msj);
+                        		end
+
+                			end 
+                        end
+                    join_none 
+        		end
+                wait fork; 
+      		end
+    	join_any  
+  	endtask
 endclass
+
