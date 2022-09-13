@@ -46,12 +46,16 @@ endclass
 // Definicion del paquete Trans_sb Checker--> ScoreBoard 
 /////////////////////////////////////////////////////////////////////
 class trans_sb #(parameter ancho = 16);
+	tipo_trans tipo;
 	bit [ancho-9:0] dato_enviado;
 	bit [7:0] Fuente;
 	bit [7:0] Destino;
 	int tiempo_envio;
 	int tiempo_recibido;
+	int retardo;
+	int procedencia;
 	int latencia;
+	bit completado;
 	
 	function clean();
 		this.dato_enviado=0;
@@ -60,6 +64,7 @@ class trans_sb #(parameter ancho = 16);
 		this.tiempo_envio=0;
 		this.tiempo_recibido=0;
 		this.latencia=0;
+		this.completado=0;
 	endfunction
 	
 	function calc_latencia();
@@ -67,15 +72,18 @@ class trans_sb #(parameter ancho = 16);
 	endfunction
 	
 	function print(string tag); //Funcion para imprimir el contenido del objeto Trans_sb
-		$display ("[%g] %s Dato=0x%g Fuente_Recibido=%g Destino_teorico=%g T_envio=%g T_recibido=%g Latencia=%g", 
+		$display ("[%g] %s Tipo=%s Dato=0x%g Fuente_teorica=%g Destino_teorico=%g Procedencia=%g T_envio=%g T_recibido=%g Latencia=%g Completado=%g" , 
 			$time,
 			tag,
+			this.tipo,
 			this.dato_enviado,
 			this.Fuente,
 			this.Destino,
+			this.procedencia,
 			this.tiempo_envio,
 			this.tiempo_recibido,
-			this.latencia
+			this.latencia,
+			this.completado
 			);
 		
 		

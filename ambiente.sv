@@ -2,7 +2,7 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 	//-----------Componentes del ambiente---------------------------------
 	driver #(.ancho(ancho), .drvrs(drvrs)) driver_inst;
 	agente #(.ancho(ancho), .drvrs(drvrs)) agente_inst;
-	//score_board #(.ancho(ancho), .drvrs(drvrs)) scoreboard_inst;
+	score_board #(.ancho(ancho), .drvrs(drvrs)) scoreboard_inst;
 	checkr #(.ancho(ancho), .drvrs(drvrs)) Checker_inst; //OJO CON LA MAYUSCULA
 	
 	
@@ -29,7 +29,7 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 		//-----------Inicializando los componentes del ambiente (modulos)---
 		driver_inst			= new();
 		agente_inst			= new();
-		//scoreboard_inst	= new();
+		scoreboard_inst		= new();
 		Checker_inst		= new();
 		
 		
@@ -47,8 +47,8 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 		Checker_inst.drv_chkr_mbx	= drv_chkr_mbx;
 		Checker_inst.agente_checker_mbx	= agente_checker_mbx;
 		
-		//scoreboard_inst.chkr_sb_mbx	= chkr_sb_mbx;
-		//scoreboard_inst.test_sb_mbx	= test_sb_mbx;
+		scoreboard_inst.chkr_sb_mbx	= chkr_sb_mbx;
+		scoreboard_inst.test_sb_mbx	= test_sb_mbx;
 	
 	endfunction
 	
@@ -58,7 +58,7 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 			driver_inst.run();
 			agente_inst.run();
 			Checker_inst.run();
-			//scoreboard_inst.run();
+			scoreboard_inst.run();
 		join_none
 	
 	endtask

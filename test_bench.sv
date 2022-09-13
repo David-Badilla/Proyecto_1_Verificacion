@@ -2,6 +2,7 @@
 `include "paquetes.sv"
 `include "Library.sv"
 `include "interfase.sv"
+`include "score_board.sv"
 `include "checkr.sv"	//HAY QUE ACOMODARLOS DONDE NO HAYA ERROR EN ORDEN
 `include "driver-monitor.sv"
 `include "agente.sv"
@@ -12,7 +13,7 @@
 
 
 
-`include "score_board.sv"
+
 
 
 	/////////////////////////////////

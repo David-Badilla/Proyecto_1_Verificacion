@@ -47,7 +47,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 							transaccion.print("Agente:transaccion creada");
 							agnt_drv_mbx.put(transaccion);
 							//#transaccion.retardo
-							transaccion.tiempo_envio=$time + transaccion.retardo;
+							transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para checker
 							agente_checker_mbx.put(transaccion);
 						end
 						
@@ -55,7 +55,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 					
 					
 					broadcast_inst: begin  // Enviar packetes exclusivos de broadcast
-						for (int i=0;i < 10-8;i++)begin  //LIMITAR A 10 LO DIJO EL PROFE
+						for (int i=0;i <num_transacciones;i++)begin  //LIMITAR A 10 LO DIJO EL PROFE
 							transaccion=new;
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
@@ -63,6 +63,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 							transaccion.destino=broadcast_id;  //define que sea de tipo broadcast
 							transaccion.print("Agente:transaccion (broadcast) creada");
 							agnt_drv_mbx.put(transaccion);
+							transaccion.tiempo_envio=$time + transaccion.retardo;
 							agente_checker_mbx.put(transaccion);
 						end
 						
@@ -74,8 +75,10 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.tipo=reset;// se fuerza a que sea de tipo reset
+							transaccion.dato=0;
 							transaccion.print("Agente:transaccion (reset) creada");
 							agnt_drv_mbx.put(transaccion);
+							transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para							
 							agente_checker_mbx.put(transaccion);
 						end
 						
@@ -93,6 +96,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 							end
 							transaccion.print("Agente:transaccion (completa) creada");
 							agnt_drv_mbx.put(transaccion);
+							transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para checker
 							agente_checker_mbx.put(transaccion);	
 						end
 							
@@ -106,7 +110,8 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 						transaccion.dato=dato_spec;
 						transaccion.retardo= ret_spec;
 						transaccion.print("Agente:transaccion (Especifica) creada");
-						agnt_drv_mbx.put(transaccion);		
+						agnt_drv_mbx.put(transaccion);	
+						transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para	
 						agente_checker_mbx.put(transaccion);						
 					end			
 					

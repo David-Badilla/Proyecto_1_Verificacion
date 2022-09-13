@@ -28,7 +28,7 @@ class test #(parameter ancho=16 , parameter drvrs=4);
 		ambiente_instancia = new();
 		ambiente_instancia._if = _if;
 		ambiente_instancia.test_sb_mbx = test_sb_mbx; 
-		//ambiente_instancia.scoreboard_inst.test_sb_mbx = test_sb_mbx;
+		ambiente_instancia.scoreboard_inst.test_sb_mbx = test_sb_mbx;
 
 		ambiente_instancia.test_agnt_mbx = test_agnt_mbx;
 		ambiente_instancia.agente_inst.test_agent_mbx = test_agnt_mbx;
@@ -87,14 +87,14 @@ class test #(parameter ancho=16 , parameter drvrs=4);
 		$display("[%g] Test: Se alcanza el tiempo limite",$time);
 		
 		//Inician instrucciones al scoreboard para reporte 
-		/*		//AUN NO HAY SCOREBOARD
-		instr_sb = retraso_promedio //Pueden ser (bwmax) (bwmin) (reporte_completo)
-		test_sb_mbx.pu(instr_sb);
 		
-		instr_sb = bwmax //Pueden ser (bwmax) (bwmin) (reporte_completo)
-		test_sb_mbx.pu(instr_sb);
+		instr_sb = reporte_completo; //Pueden ser (bwmax) (bwmin) (reporte_completo)
+		test_sb_mbx.put(instr_sb);
+		
+		//instr_sb = bwmax; //Pueden ser (bwmax) (bwmin) (reporte_completo)
+		//test_sb_mbx.put(instr_sb);
 		#20
-		*/
+		
 		
 		$finish;
 		
