@@ -108,9 +108,9 @@ typedef enum {retraso_promedio, bwmax, bwmin, reporte_completo} solicitud_sb;
 ///////////////////////////////////////////////
 // Definicion mailbox 
 ///////////////////////////////////////////////
-typedef mailbox #(trans_dut .ancho(ancho),.drvrs(drvrs)) trans_dut_mbx;  //agente/generador ===> driver/monitor ===>Checker
+typedef mailbox #(trans_dut) trans_dut_mbx;  //agente/generador ===> driver/monitor ===>Checker
 
-typedef mailbox #(trans_sb .ancho(ancho),.drvrs(drvrs)) trans_sb_mbx;  //Checker ===> Scoreboard
+typedef mailbox #(trans_sb) trans_sb_mbx;  //Checker ===> Scoreboard
 
 typedef mailbox #(instrucciones_agente) instrucciones_agente_mbx;  //Test===> Agente/Generador
 typedef mailbox #(solicitud_sb) solicitud_sb_mbx;//Test===> Scoreboard

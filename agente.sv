@@ -107,6 +107,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 						transaccion.tipo=tpo_spec;
 						transaccion.fuente= fte_spec;
 						transaccion.destino= dest_spec;
+						if(transaccion.tipo==broadcast) transaccion.destino= broadcast_id;
 						transaccion.dato=dato_spec;
 						transaccion.retardo= ret_spec;
 						transaccion.print("Agente:transaccion (Especifica) creada");

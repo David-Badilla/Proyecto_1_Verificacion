@@ -27,10 +27,19 @@ module test_bench;
 	parameter ancho = 16;
 	parameter drvrs =  4;
 	parameter broadcast_indi = {8{1'b1}};
-	int numero_instrucciones=1000;
+	int numero_instrucciones=100;
 	int max_retardo=20;
-	instrucciones_agente instr_agente = genericos; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica uno_todos,todos_uno
-	solicitud_sb instr_sb = retraso_promedio;//retraso_promedio, bwmax, bwmin, reporte_completo;
+	instrucciones_agente instr_agente = trans_especifica; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica uno_todos,todos_uno
+	solicitud_sb instr_sb = reporte_completo;//retraso_promedio, bwmax, bwmin, reporte_completo;
+
+	
+
+//Variables para transaccion especifica
+	tipo_trans tpo_spec = generico;	//generico, broadcast, reset,uno_todo,todo_uno
+	bit [7:0] fte_spec = 1;
+	bit [7:0] dest_spec=2;
+	bit [ancho-9:0] dato_spec=8;
+	int ret_spec = 25;
 
 
 
@@ -63,6 +72,15 @@ module test_bench;
 		t0.ambiente_instancia.agente_inst.broadcast_id=broadcast_indi;
 		t0.ambiente_instancia.agente_inst.max_retardo=max_retardo;
 		t0.instr_agente=instr_agente;
+	
+
+		t0.ambiente_instancia.agente_inst.tpo_spec=tpo_spec;
+		t0.ambiente_instancia.agente_inst.fte_spec=fte_spec;
+		t0.ambiente_instancia.agente_inst.dest_spec=dest_spec;
+		t0.ambiente_instancia.agente_inst.dato_spec=dato_spec;
+		t0.ambiente_instancia.agente_inst.ret_spec=ret_spec;
+	
+
 
 		fork
 			t0.run();
