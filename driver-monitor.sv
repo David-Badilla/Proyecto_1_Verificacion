@@ -67,7 +67,14 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo
 	                            delay = 0;  
 	                            @(posedge vif.clk);
 	                            drv_fifos_mbx[i].get(transaccion[i]); //Saca la transaccion actual del mbx
-	                            paquete[ancho-1:ancho-8] = transaccion[i].destino;
+								if(transaccion[i].tipo==reset)begin
+									vif.rst=1;
+									@(posedge vif.clk);
+									@(posedge vif.clk);
+									vif.rst=0;
+								end	                            
+								
+								paquete[ancho-1:ancho-8] = transaccion[i].destino;
 	                            paquete[ancho-9:0] = transaccion[i].dato;
 	                          
 	            				//Ciclos de retraso

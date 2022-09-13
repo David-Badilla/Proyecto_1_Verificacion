@@ -62,12 +62,12 @@ class trans_sb #(parameter ancho = 16);
 		this.latencia=0;
 	endfunction
 	
-	task calc_latencia;
+	function calc_latencia();
 		this.latencia=this.tiempo_recibido - this.tiempo_envio;
-	endtask
+	endfunction
 	
 	function print(string tag); //Funcion para imprimir el contenido del objeto Trans_sb
-		$display ("[%g] %s Dato=0x%h Fuente_Recibido=%g Destino_teorico=%g T_envio=%g T_recibido=%g Latencia=%g", 
+		$display ("[%g] %s Dato=0x%g Fuente_Recibido=%g Destino_teorico=%g T_envio=%g T_recibido=%g Latencia=%g", 
 			$time,
 			tag,
 			this.dato_enviado,

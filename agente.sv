@@ -46,6 +46,8 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 							transaccion.tipo=generico; // se fuerza a que sea de tipo generico
 							transaccion.print("Agente:transaccion creada");
 							agnt_drv_mbx.put(transaccion);
+							//#transaccion.retardo
+							transaccion.tiempo_envio=$time + transaccion.retardo;
 							agente_checker_mbx.put(transaccion);
 						end
 						

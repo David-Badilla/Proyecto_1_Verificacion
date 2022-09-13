@@ -8,7 +8,7 @@ class checkr #(parameter drvrs = 4, parameter ancho = 16);
     trans_sb_mbx chkr_sb_mbx; //puntero del mail boxer no inicializado aun
 	trans_dut_mbx agente_checker_mbx;
     int cont;
-    
+    bit listo=0;
     function new();
         this.emul_dut = {};
         this.cont = 0;
@@ -32,23 +32,31 @@ class checkr #(parameter drvrs = 4, parameter ancho = 16);
                 generico:begin
                         
 						if(emul_dut.size()>0)begin
-							dut_emulado = emul_dut.pop_back();
-							for (int i=0;i<dut_emulado.size();i++) begin
-				                if (transaccion.dato == dut_emulado.dato)begin
+							//dut_emulado = emul_dut.pop_back();
+							listo=0;//variable constrol para ver si se encuentra en la cola o no
+							for (int i=0;i<emul_dut.size();i++) begin
+				                if (transaccion.dato  == emul_dut[i].dato && transaccion.destino==emul_dut[i].destino)begin
+									listo=1;//indica que ya se encontro la transaccion
+									dut_emulado =emul_dut[i];
+									emul_dut.delete(i); //borra el lugar en la cola para no volver a repetirlo
 				                    to_sb.dato_enviado = dut_emulado.dato;
-				                    to_sb.Fuente = dut_emulado.fuente;
-				                    to_sb.Destino = dut_emulado.destino;
+				                    to_sb.Fuente = transaccion.fuente;
+				                    to_sb.Destino = transaccion.destino;
 				                    to_sb.tiempo_envio = dut_emulado.tiempo_envio;
-				                    to_sb.tiempo_recibido = dut_emulado.tiempo_recibido;
-				                    //to_sb.latencia = dut_emulado.latencia;
-				                    to_sb.print("Checker: Transaccion completada");
+				                    to_sb.tiempo_recibido = transaccion.tiempo_recibido;
+									to_sb.calc_latencia();
+				                    
+				                    to_sb.print("Checker: Transaccion completada **ENVIADA AL SCOREBOARD**");
 				                    chkr_sb_mbx.put(to_sb); //para poner en mailbox la info de to_sb
-				                end else begin
-				                    transaccion.print("Dato que se transmite no calza con el esperado");
-				                    $display("Esperado %h, Leido %h", transaccion.dato, dut_emulado.dato);
-				                end 
+								end
+
 							end
-						end             
+					             
+						if(listo==0) begin
+							transaccion.print("Dato que se transmite no calza con el esperado");
+//		                    $display("Esperado %h, Leido %h", transaccion.dato, dut_emulado.dato);
+						end
+					end 
                 end  
             endcase      
         end
