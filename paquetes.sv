@@ -144,10 +144,10 @@ class fifo #(parameter pile_size = 5, parameter pckg_sz = 32);
       
 		//Asercion si se hizo
 		/*v_push: assert (!this.fifo_full) begin
-          	$display("[Pass] PUSH cuando FIFO %s NO esta llena", tag);
+        //  	$display("[Pass] PUSH cuando FIFO %s NO esta llena", tag);
 		end else begin
-          	$display("[Fail] PUSH cuando FIFO %s SI esta llena", tag);
-		end*/
+          //	$display("[Fail] PUSH cuando FIFO %s SI esta llena", tag);
+		end//*/
 		
       	pile.push_front(mensaje);
 		this.pndg = 1;
@@ -157,10 +157,10 @@ class fifo #(parameter pile_size = 5, parameter pckg_sz = 32);
   	function bit[pckg_sz-1:0] pop(string tag = "");
 		//Asercion de que no este vacio el FIFO
 		/*v_pop: assert (pile.size() != 0) begin
-          	$display("[Pass] POP cuando FIFO %s NO esta vacia", tag);
+        //  	$display("[Pass] POP cuando FIFO %s NO esta vacia", tag);
 		end else begin
-          	$display("[Fail] POP cuando FIFO %s SI esta vacia", tag);
-		end	*/
+          //	$display("[Fail] POP cuando FIFO %s SI esta vacia", tag);
+		end	//*/
 		//Hace Pop el FIFO
 		if(pile.size() > 0) begin
 			if(pile.size() == 1) begin			

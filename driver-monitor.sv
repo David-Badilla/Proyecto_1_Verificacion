@@ -220,22 +220,34 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=100000
 	trans_dut #(.ancho(ancho), .drvrs(drvrs)) recibido[drvrs-1:0];
 	 bit [ancho-1:0] transa[drvrs-1:0];
 	int espera[drvrs-1:0];
-	bit [ancho-1:0] temp;
+	bit [ancho-1:0] temp[drvrs-1:0];
 	event drvr_done;  //Evento para registrar finalizacion del driver 
     event msj_sent;
   //Variables para FIFO
-  mailbox fifo_mbox[drvrs-1:0]; //Mailboxes para pasar datos a los procesos hijos
+	mailbox fifo_mbox[drvrs-1:0]; //Mailboxes para pasar datos a los procesos hijos
     fifo #(.pile_size(pile_size), .pckg_sz(ancho)) cola [drvrs-1:0]; //Se instancia la clase de fifo
-	fifo #(.pile_size(pile_size), .pckg_sz(ancho)) fifo_mntr [drvrs-1:0]; // FIFO de recepcion 
+	fifo #(.pile_size(pile_size), .pckg_sz(ancho)) fifo_mntr; // FIFO de recepcion 
   bit cmplt;
   
   //Envio a checker
     mailbox chkr_mbox;
   
+
+
+	trans_dut #(.ancho(ancho),.drvrs(drvrs)) msj2[drvrs-1:0];
+	trans_dut #(.ancho(ancho),.drvrs(drvrs)) msjrec[drvrs-1:0];
+	
   task run();
         
         $display("[%0t] [Driver] Iniciando...", $time);
-    
+    	@(posedge vif.clk);
+		vif.rst=1;
+		@(posedge vif.clk);
+		@(posedge vif.clk);
+		@(posedge vif.clk);
+		vif.rst=0;
+		@(posedge vif.clk);
+		@(posedge vif.clk);
         //Inicializacion de mailboxes y FIFOs
     for (int i = 0; i < drvrs; i++) begin 
       fifo_mbox[i] = new();
@@ -257,7 +269,7 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=100000
 					fifo_mbox[msj.fuente].put(msj);
 					@(posedge vif.clk);
 					$display("[%g] Driver Mensaje enviado", $time);
-					->drvr_done;
+					
 					
 				end //end del forever	
 		end
@@ -266,8 +278,8 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=100000
       begin 
         // Generacion de subprocesos
         for (int j = 0; j < drvrs; j++) begin
-                    automatic int jj = j;
-					fifo_mntr [jj] = new(); 
+                    automatic int i = j;
+					fifo_mntr = new(); 
           fork 
             //Proceso de recepcion de datos del DRIVER
             begin
@@ -275,20 +287,20 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=100000
               int delay = 0; //variable para implementar retraso
                             @(posedge vif.clk);
                             forever begin
-                                trans_dut #(.ancho(ancho),.drvrs(drvrs)) msj2;
+                                msj2[i]=new;
                                 //Trans_scr_chckr #(.pckg_sz(ancho)) msj2chkr = new();
                                 delay = 0;  
                               
                                 @(posedge vif.clk);
-                                fifo_mbox[jj].get(msj2); //toma el dato
-                                paquete[ancho-1:ancho-8] = msj2.destino;
-                                paquete[ancho-9:0] = msj2.dato;
+                                fifo_mbox[i].get(msj2[i]); //toma el dato
+                                paquete[ancho-1:ancho-8] = msj2[i].destino;
+                                paquete[ancho-9:0] = msj2[i].dato;
                               
                 				//Ciclo de retraso
-                                while(delay <= msj2.retardo)begin
-                                  	if(delay >= msj2.retardo)begin
+                                while(delay <= msj2[i].retardo)begin
+                                  	if(delay >= msj2[i].retardo)begin
                                        
-                                        cola[jj].push(paquete); //insercion a la cola
+                                        cola[i].push(paquete); //insercion a la cola
                                         //drv_chkr_mbx.put(msj2chkr);
                                         //->msj_sent;
                                         break;  
@@ -300,23 +312,23 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=100000
                         end
             
                         begin
-                            bit [ancho-1:0] paquete = {ancho-1{1'b0}};
+                            bit [ancho-1:0] paquete = {ancho{1'b0}};
                             @(posedge vif.clk);
                           forever begin
                             	
                                 @(posedge vif.clk);
                                 //Manejo de pop                            
-                            	if(vif.pop[0][jj])begin
-                              		vif.D_pop[0][jj] = cola[jj].pop("INTERFASE DRIVER");
-                                  	vif.pndng[0][jj] <= cola[jj].get_pndg();
+                            	if(vif.pop[0][i])begin
+                              		vif.D_pop[0][i] = cola[i].pop("INTERFASE DRIVER");
+                                  	vif.pndng[0][i] <= cola[i].get_pndg();
 						        end else begin
-                                  	vif.D_pop[0][jj] <= cola[jj].pile[$]; 
+                                  	vif.D_pop[0][i] <= cola[i].pile[$]; 
                                 end
                                 //manejo de bandera de pndng
-                                if(cola[jj].get_pndg() == 1) begin
-                                  	vif.pndng[0][jj] <= 1;
+                                if(cola[i].get_pndg() == 1) begin
+                                  	vif.pndng[0][i] <= 1;
                                 end else begin
-                                  	vif.pndng[0][jj] <= 0;
+                                  	vif.pndng[0][i] <= 0;
                                 end
                             
                             end
@@ -328,10 +340,12 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=100000
               				@(posedge vif.clk);
                 			forever begin                 
                               	
-                              	@(vif.push[0][jj]);
+                              	@(vif.push[0][i]);
                               	//PUSH
                         		//if(vif.push[0][idx])begin
-                                  	fifo_mntr[jj].push(vif.D_push[0][jj], "[MONITOR]");
+                                  	fifo_mntr.push(vif.D_push[0][i], "[MONITOR]");
+									@(posedge vif.clk);
+									@(posedge vif.clk);
                         		//end
                             end
                         end
@@ -339,23 +353,25 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=100000
                           	@(posedge vif.clk);
                         	forever begin
                               	//POP
-                              	trans_dut #(.ancho(ancho)) msj = new();
+								msjrec[i] = new();
                               	@(posedge vif.clk);
-                        		if(fifo_mntr[jj].get_pndg())begin
-                                  	temp = fifo_mntr[jj].pop("[MONITOR]");
-                            		msj.dato = temp[ancho-9:0];
-                            		msj.tiempo_recibido = $time;
-                            		msj.fuente = jj;
-                           	 		drv_chkr_mbx.put(msj);
+                        		if(fifo_mntr.get_pndg())begin
+                                  	temp[i] = fifo_mntr.pop("[MONITOR]");
+									msjrec[i].destino=temp[i][ancho-1:ancho-8];
+                            		msjrec[i].dato = temp[i][ancho-9:0];
+                            		msjrec[i].tiempo_recibido = $time;
+                            		msjrec[i].fuente = i;
+									msjrec[i].print("Se coloca transaccion para el checker");
+                           	 		drv_chkr_mbx.put(msjrec[i]);
                         		end
 
                 			end 
                         end
                     join_none 
         		end
-                wait fork; 
+                //wait fork; 
       		end
-    	join_any  
+    	join_none  
   	endtask
 endclass
 

@@ -22,7 +22,7 @@ module test_bench;
 	parameter ancho = 16;
 	parameter drvrs =  4;
 	parameter broadcast_indi = {8{1'b1}};
-	int numero_instrucciones=2;
+	int numero_instrucciones=4;
 	
 	test #(.ancho(ancho) , .drvrs(drvrs)) t0;	//Instancia clase test
 	bus_if #(.pckg_sz(ancho),.drvrs(drvrs))  _if(.clk(clk)); //Instancia interfaz
