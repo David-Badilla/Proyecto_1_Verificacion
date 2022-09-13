@@ -1,245 +1,23 @@
-/*
-class driver #(parameter drvrs = 4, parameter ancho = 16);
 
+class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo=1000000);
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
 	trans_dut_mbx agnt_drv_mbx;
 	trans_dut_mbx drv_chkr_mbx;
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) subprocesos_entrada[drvrs-1:0][$]; //Cola de tipo trans dut para cada dispositivo
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) subprocesos_salida[drvrs-1:0][$]; //No utilizada 
-	
-	
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) trans[drvrs-1:0]; //Variables temporales para almacenar cada transaccion de la fifo(queue)
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) Retardoins[drvrs-1:0];
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) recibido[drvrs-1:0];
-	 bit [ancho-1:0] transa[drvrs-1:0];
-	int espera[drvrs-1:0];
-	task run();
-		$display("[%g] El driver fue inicializado",$time);
-		@(posedge vif.clk);
-		vif.rst=1;
-		@(posedge vif.clk);
-		@(posedge vif.clk);
-		@(posedge vif.clk);
-		vif.rst=0;
-		@(posedge vif.clk);
-		@(posedge vif.clk);
-		
-		for (int i = 1; i < drvrs; i++) begin 
-			Retardoins[i]=new;
-      		trans[i] = new;
-			vif.pndng[0][i]=0;
-			espera[i]=0;
-			//vif.D_pop[0][i]={4'b0001,4'b0010};
 
-	    end
-		//$display ("Driver: se inician los subprocesos");
-		
-			
-		fork 
-			begin //Hijo para rebicion de transaccion entrante de mbx
-				@(posedge vif.clk);
-				forever begin
-					trans_dut #(.ancho(ancho), .drvrs(drvrs)) transaccion = new; //Crea un objeto para almacenar la transaccion siguiente
-					$display("[%g] El Driver espera una transaccion",$time);
-					//@(posedge vif.clk);
-					agnt_drv_mbx.get(transaccion);		//espera a que haya algo en el mailbox bloqueando el avance
-					transaccion.fuente=1;
-					transaccion.destino=3;
-
-
-					transaccion.print("Driver: Transaccion recibida");	//imprime lo que recibi?? 
-					$display("transacciones pendientes en mbx agnt-driver = %g",agnt_drv_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
-					
-					
-					////////////////////////////////////////////////////////////////////////////////////
-					/// Division de las instrucciones en diferentes fifos (colas)
-					////////////////////////////////////////////////////////////////////////////////////
-					
-					subprocesos_salida[transaccion.fuente].push_back(transaccion); //coloca la transaccion en la cola(fifo) correspondiente a la fuente
-					$display("		Cantidad de datos en la cola disp[%g]: %g",transaccion.fuente,subprocesos_entrada[transaccion.fuente].size());
-					@(posedge vif.clk);
-					
-				end //end del forever		
-					
-			end //end hijo 1
-			
-		
-						// inicia la generacion de hijos para cada interfaz
-			 
-			begin //begin hijo 2 dispositivos 
-				for (int j=1;j<drvrs;j++)begin  //-----crea los hijos que diga drvrs---------------
-					automatic int i=j;
-					fork
-						
-						begin //hijo Retrasos
-							@(posedge vif.clk);
-							forever begin
-								espera[i]=0;
-								Retardoins[i]=new;
-								if(subprocesos_salida[i].size()>0)begin
-									Retardoins[i]=subprocesos_salida[i].pop_front;
-									while(espera[i] <= Retardoins[i].retardo)begin 	//manejo del retardo 
-										@(posedge vif.clk);
-										espera[i]=espera[i]+1;								
-										if(espera[i]==Retardoins[i].retardo)begin
-											Retardoins[i].tiempo_envio=$time;
-											Retardoins[i].print("Driver: Retardo simulado enviado al dut");
-																		
-											subprocesos_entrada[i].push_back(Retardoins[i]);						
-											break;
-										end 	
-									end //end while
-								end else begin
-									//Retardoins[i]=new;
-								end
-								@(posedge vif.clk);
-								//@(posedge vif.clk);@(posedge vif.clk);
-								
-							end//forever
-						end //hijo
-
-			
-						begin // -----------hijo pop  -------------
-							$display ("Hijo %g iniciado",i);
-							@(posedge vif.clk);
-							//vif.D_pop[0] [i]<={ancho{1'b0}};
-								if(vif.pndng[0][i]==0)begin
-									trans[i]=new;
-									transa[i]=0;
-									vif.D_pop[0][i]=transa[i];
-									$display("	D_pop = %g",vif.D_pop[0][i]);
-								end
-							forever begin
-									
-									//Manejo del pop
-									//$display("**[%g]pop disp[%g]=%g **",$time,i,vif.pop[0][i]);
-									@(posedge vif.clk);
-									
-									if (vif.pop[0][i]) begin
-										$display("**[%g]pop disp[%g]=%g **",$time,i,vif.pop[0][i]);
-
-						
-										trans[i]=subprocesos_entrada[i].pop_front; //saca el primero en la cola temporal
-										transa[i]={trans[i].destino,trans[i].dato};										
-										vif.D_pop[0][i]=transa[i];
-													
-										trans[i].print("	Dato en D_pop");
-										$display("			Dpop concat dest %b dat= %b :%b",trans[i].destino,trans[i].dato,transa[i]);
-				//@(posedge vif.clk);@(posedge vif.clk);
-										@(posedge vif.clk);
-										$display("		Se hace un pop cantidad de datos restantes en cola[%g] =",i,subprocesos_entrada[i].size());
-										$display("		Dipositivo %g",i);
-										if (subprocesos_entrada[i].size() > 0)begin //Revisa si quedan pendientes
-											vif.pndng[0][i]=1;
-											//@(posedge vif.clk);@(posedge vif.clk);
-										end else begin
-											vif.pndng[0][i]=0;
-											//@(posedge vif.clk);@(posedge vif.clk);
-										end
-									end else begin	
-										//vif.D_pop[0][i]=0;
-									end
-									
-
-								 
-
-
-							end//end forever
-						end//end hijo
-
-						begin//manejo del pending
-							//@(posedge vif.clk);
-							forever begin
-								if (subprocesos_entrada[i].size() > 0) begin 
-									vif.pndng[0][i]=1;							
-									//$display("		pndng disp[%g] = %g ",i,vif.pndng[0][i]);	
-								end	else begin 
-									vif.pndng[0][i]=0;
-
-								end	
-								@(posedge vif.clk);
-	
-							end
-							
-						end
-
-
-
-						
-						
-						begin //Hijo Monitor
-							@(posedge vif.clk);
-							forever begin	
-								/////////////////////////////////////////////////
-								//Revision si hay algun dato que salga (MONITOR)
-								/////////////////////////////////////////////////
-									$display ("PUSH =%g en Disp[%g]",vif.push[0][i],i);
-									@( vif.push[0][i]); //bloquea hasta que haya un push
-									//@(posedge vif.clk);
-									$display ("PUSH =1 en Disp[%g]",i);
-									recibido[i]=new;
-									recibido[i].fuente=i; //En este caso la fuente es donde se recibe en mensaje se compara con el destino en teoria
-									recibido[i].destino=vif.D_push[0][i][ancho-1:ancho-8] ; //Extrae la direccion del destino que se supone debe ir
-									recibido[i].dato=vif.D_push[0][i][ancho-9:0] ; // Extrae del dato recibido de dut el destino original
-									recibido[i].tiempo_recibido=$time; 
-									recibido[i].print("Driver: transaccion recibida y enviada al checker:");
-											$display("En dispositivo %g",i);
-									drv_chkr_mbx.put(recibido[i]); //se coloca de una vez al mailbox
-									//@(posedge vif.clk);
-							end	//end del forever 			
-						end //end el hijo hijo 
-					join_none
-					
-				end //end del for	
-				//wait fork;
-			end
-		join_none
-	
-			
-		
-	endtask
-
-
-endclass*/
-
-
-
-
-
-
-class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=1000000);
-	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
-	trans_dut_mbx agnt_drv_mbx;
-	trans_dut_mbx drv_chkr_mbx;
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) subprocesos_entrada[drvrs-1:0][$]; //Cola de tipo trans dut para cada dispositivo
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) subprocesos_salida[drvrs-1:0][$]; //No utilizada 
-	
-	
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) trans[drvrs-1:0]; //Variables temporales para almacenar cada transaccion de la fifo(queue)
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) Retardoins[drvrs-1:0];
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) recibido[drvrs-1:0];
-	 bit [ancho-1:0] transa[drvrs-1:0];
-	int espera[drvrs-1:0];
-	bit [ancho-1:0] temp[drvrs-1:0];
+	bit [ancho-1:0] temporal[drvrs-1:0];
 	event drvr_done;  //Evento para registrar finalizacion del driver 
     event msj_sent;
   //Variables para FIFO
-	mailbox fifo_mbox[drvrs-1:0]; //Mailboxes para pasar datos a los procesos hijos
-    fifo #(.pile_size(pile_size), .pckg_sz(ancho)) cola [drvrs-1:0]; //Se instancia la clase de fifo
-	fifo #(.pile_size(pile_size), .pckg_sz(ancho)) fifo_mntr; // FIFO de recepcion 
-  bit cmplt;
-  
-  //Envio a checker
-    mailbox chkr_mbox;
-  
+	mailbox drv_fifos_mbx[drvrs-1:0]; //Mailboxes para pasar datos a los procesos hijos
+    fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) drv_interfaz_fifo [drvrs-1:0]; //Se instancia la clase de fifo
+	fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) fifo_salida[drvrs-1:0]; // FIFO de recepcion 
 
-
-	trans_dut #(.ancho(ancho),.drvrs(drvrs)) msj2[drvrs-1:0];
-	trans_dut #(.ancho(ancho),.drvrs(drvrs)) msjrec[drvrs-1:0];
+	trans_dut #(.ancho(ancho),.drvrs(drvrs)) transaccion[drvrs-1:0];
+	trans_dut #(.ancho(ancho),.drvrs(drvrs)) trans_recibida[drvrs-1:0];
 	
   task run();
         
-        $display("[%0t] [Driver] Iniciando...", $time);
+        $display("[%g] El driver fue inicializado",$time);
     	@(posedge vif.clk);
 		vif.rst=1;
 		@(posedge vif.clk);
@@ -250,8 +28,8 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=100000
 		@(posedge vif.clk);
         //Inicializacion de mailboxes y FIFOs
     for (int i = 0; i < drvrs; i++) begin 
-      fifo_mbox[i] = new();
-      cola[i] = new();
+      drv_fifos_mbx[i] = new();
+      drv_interfaz_fifo[i] = new();
     end
     
     fork
@@ -259,119 +37,112 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter pile_size=100000
 		begin
 			@(posedge vif.clk);
 				forever begin
-					trans_dut #(.ancho(ancho),.drvrs(drvrs)) msj;
-                    $display("[%g] [Driver] Esperando mensaje...", $time);
+					trans_dut #(.ancho(ancho),.drvrs(drvrs)) recibido;
+                    $display("[%g] El Driver espera una transaccion",$time);
           
 					//Espera a recibir un mensaje del agente
-					agnt_drv_mbx.get(msj);
-					msj.print("Driver"); //Desplega informacion de mensaje
-					//Ingresa msj al FIFO
-					fifo_mbox[msj.fuente].put(msj);
+					agnt_drv_mbx.get(recibido);
+					recibido.print("Driver: Transaccion recibida"); //Desplega informacion de mensaje
+					$display("transacciones pendientes en mbx agnt-driver = %g",agnt_drv_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
+					drv_fifos_mbx[recibido.fuente].put(recibido); //mete la transaccion al mailbox correspondiente a la fuente
 					@(posedge vif.clk);
-					$display("[%g] Driver Mensaje enviado", $time);
-					
-					
+				
 				end //end del forever	
 		end
       
       //Proceso de los FIFO 
-      begin 
+		begin 
         // Generacion de subprocesos
-        for (int j = 0; j < drvrs; j++) begin
+        	for (int j = 0; j < drvrs; j++) begin
                     automatic int i = j;
-					fifo_mntr = new(); 
-          fork 
-            //Proceso de recepcion de datos del DRIVER
-            begin
-              automatic bit [ancho-1:0] paquete; //Variable de datos para el fifo
-              int delay = 0; //variable para implementar retraso
-                            @(posedge vif.clk);
-                            forever begin
-                                msj2[i]=new;
-                                //Trans_scr_chckr #(.pckg_sz(ancho)) msj2chkr = new();
-                                delay = 0;  
-                              
-                                @(posedge vif.clk);
-                                fifo_mbox[i].get(msj2[i]); //toma el dato
-                                paquete[ancho-1:ancho-8] = msj2[i].destino;
-                                paquete[ancho-9:0] = msj2[i].dato;
-                              
-                				//Ciclo de retraso
-                                while(delay <= msj2[i].retardo)begin
-                                  	if(delay >= msj2[i].retardo)begin
-                                       
-                                        cola[i].push(paquete); //insercion a la cola
-                                        //drv_chkr_mbx.put(msj2chkr);
-                                        //->msj_sent;
-                                        break;  
-                  					end
-                                    @(posedge vif.clk);
-                                    delay =  delay + 1;
-                				end
-                            end
-                        end
-            
-                        begin
-                            bit [ancho-1:0] paquete = {ancho{1'b0}};
-                            @(posedge vif.clk);
-                          forever begin
-                            	
-                                @(posedge vif.clk);
-                                //Manejo de pop                            
-                            	if(vif.pop[0][i])begin
-                              		vif.D_pop[0][i] = cola[i].pop("INTERFASE DRIVER");
-                                  	vif.pndng[0][i] <= cola[i].get_pndg();
-						        end else begin
-                                  	vif.D_pop[0][i] <= cola[i].pile[$]; 
-                                end
-                                //manejo de bandera de pndng
-                                if(cola[i].get_pndg() == 1) begin
-                                  	vif.pndng[0][i] <= 1;
-                                end else begin
-                                  	vif.pndng[0][i] <= 0;
-                                end
-                            
-                            end
-                        end
+					fifo_salida[i] = new(); 
+        	  fork 
+         
+        	    begin //Inicia hijo para manejo de retardo
+	    	      automatic bit [ancho-1:0] paquete; //Variable de datos para la fifo de entrada
+	          int delay = 0; //variable de retraso
+	                        @(posedge vif.clk);
+	                        forever begin
+	                            transaccion[i]=new; 
+	                            delay = 0;  
+	                            @(posedge vif.clk);
+	                            drv_fifos_mbx[i].get(transaccion[i]); //Saca la transaccion actual del mbx
+	                            paquete[ancho-1:ancho-8] = transaccion[i].destino;
+	                            paquete[ancho-9:0] = transaccion[i].dato;
+	                          
+	            				//Ciclos de retraso
+	                            while(delay <= transaccion[i].retardo)begin
+	                              	if(delay >= transaccion[i].retardo)begin
+	                                    drv_interfaz_fifo[i].push(paquete); // se coloca el dato en la fifo de entrada 
+	                                    break;  
+	              					end
+	                                @(posedge vif.clk);
+	                                delay =  delay + 1;
+	            				end
+	                        end
+	                    end
+	        
+	                    begin//Hijos para manejo de pop
+	                        bit [ancho-1:0] paquete = {ancho{1'b0}};
+	                        @(posedge vif.clk);
+	                      forever begin
+	                        	
+	                            @(posedge vif.clk);                                       
+	                        	if(vif.pop[0][i])begin
+	                          		vif.D_pop[0][i] = drv_interfaz_fifo[i].pop();
+	                              	vif.pndng[0][i] <= drv_interfaz_fifo[i].get_pndg();
+							    end else begin
+	                              	vif.D_pop[0][i] <= drv_interfaz_fifo[i].pile[$]; 
+	                            end
+	                            //manejo de bandera de pndng
+	                            if(drv_interfaz_fifo[i].get_pndg() == 1) begin
+	                              	vif.pndng[0][i] <= 1;
+	                            end else begin
+	                              	vif.pndng[0][i] <= 0;
+	                            end
+	                        
+	                        end
+	                    end
 
 
 
-						begin                                  
-              				@(posedge vif.clk);
-                			forever begin                 
-                              	
-                              	@(vif.push[0][i]);
-                              	//PUSH
-                        		//if(vif.push[0][idx])begin
-                                  	fifo_mntr.push(vif.D_push[0][i], "[MONITOR]");
+						begin    // Hijo manejo de push (Monitor)                              
+	          				@(posedge vif.clk);
+	            			forever begin                 
+	                          	
+	                          	@(vif.push[0][i]);
+	                          	//PUSH
+	                    		//if(vif.push[0][idx])begin
+	                              	fifo_salida[i].push(vif.D_push[0][i]);
 									@(posedge vif.clk);
 									@(posedge vif.clk);
-                        		//end
-                            end
-                        end
-                      	begin
-                          	@(posedge vif.clk);
-                        	forever begin
-                              	//POP
-								msjrec[i] = new();
-                              	@(posedge vif.clk);
-                        		if(fifo_mntr.get_pndg())begin
-                                  	temp[i] = fifo_mntr.pop("[MONITOR]");
-									msjrec[i].destino=temp[i][ancho-1:ancho-8];
-                            		msjrec[i].dato = temp[i][ancho-9:0];
-                            		msjrec[i].tiempo_recibido = $time;
-                            		msjrec[i].fuente = i;
-									msjrec[i].print("Se coloca transaccion para el checker");
-                           	 		drv_chkr_mbx.put(msjrec[i]);
-                        		end
+	                    		//end
+	                        end
+	                    end
+	                  	begin
+	                      	@(posedge vif.clk);
+	                    	forever begin
+	                          	//POP
+								trans_recibida[i] = new();
+	                          	@(posedge vif.clk);
+	                    		if(fifo_salida[i].get_pndg())begin
+	                              	temporal[i] = fifo_salida[i].pop();
+									trans_recibida[i].destino=temporal[i][ancho-1:ancho-8];
+	                        		trans_recibida[i].dato = temporal[i][ancho-9:0];
+									trans_recibida[i].tipo=0;
+	                        		trans_recibida[i].tiempo_recibido = $time;
+	                        		trans_recibida[i].fuente = i;
+									trans_recibida[i].print("Driver: Se coloca transaccion para el checker");
+	                       	 		drv_chkr_mbx.put(trans_recibida[i]);
+									$display("transacciones pendientes en mbx driver-checker = %g",drv_chkr_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
+	                    		end
 
-                			end 
-                        end
-                    join_none 
-        		end
-                //wait fork; 
+	            			end 
+	                    end
+	                join_none //join cada dispositivo-intefaz
+	    		end //end del for
       		end
-    	join_none  
+    	join_none //join de cada proceso (recibir datos-retardo-hacer pop - push) 
   	endtask
 endclass
 

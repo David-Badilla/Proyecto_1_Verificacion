@@ -19,11 +19,18 @@
 
 module test_bench;
 	reg clk;
+
+	//Parametros editables desde aca mas facil
 	parameter ancho = 16;
 	parameter drvrs =  4;
 	parameter broadcast_indi = {8{1'b1}};
-	int numero_instrucciones=4;
-	
+	int numero_instrucciones=3;
+	int max_retardo=5;
+	instrucciones_agente instr_agente = genericos; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica
+
+
+
+
 	test #(.ancho(ancho) , .drvrs(drvrs)) t0;	//Instancia clase test
 	bus_if #(.pckg_sz(ancho),.drvrs(drvrs))  _if(.clk(clk)); //Instancia interfaz
 	always #5 clk=~clk;
@@ -42,11 +49,16 @@ module test_bench;
 	initial begin 
 		clk=0;
 		t0=new();
-		t0._if = _if;
+		//Conexiones instancias
+		t0._if = _if;		
 		t0.ambiente_instancia._if=_if;
 		t0.ambiente_instancia.driver_inst.vif=_if;
 		t0.ambiente_instancia.agente_inst.num_transacciones=numero_instrucciones;
+
+		//Conexiones parametros pruebas
 		t0.ambiente_instancia.agente_inst.broadcast_id=broadcast_indi;
+		t0.ambiente_instancia.agente_inst.max_retardo=max_retardo;
+		t0.instr_agente=instr_agente;
 
 		fork
 			t0.run();

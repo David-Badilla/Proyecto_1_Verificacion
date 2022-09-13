@@ -35,6 +35,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 				test_agent_mbx.get(instruccion);
 				
 				case(instruccion)
+	
 					genericos: begin //aleatorio comun
 						for (int i=0;i < num_transacciones;i++)begin
 							transaccion=new;

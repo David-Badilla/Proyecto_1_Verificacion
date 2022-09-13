@@ -48,32 +48,39 @@ class test #(parameter ancho=16 , parameter drvrs=4);
 			ambiente_instancia.run();
 		join_none
 		
-		
-		instr_agente = genericos;
-		test_agnt_mbx.put(instr_agente);
-		$display("[%g] Test: Enviada la primera instruccion (genericos)",$time);
-		
-		
-		/*instr_agente = broadcast_inst;
-		test_agnt_mbx.put(instr_agente);
-		$display("[%g] Test: Enviada la segunda instruccion (broadcast_inst)",$time);*/
-		
-		
-		
-		/*instr_agente = Rst_aleatorio;
-		test_agnt_mbx.put(instr_agente);
-		$display("[%g] Test: Enviada la tercera instruccion (Rst_aleatorio)",$time);*/
-		
-		
-		/*instr_agente = Completo;
-		test_agnt_mbx.put(instr_agente);
-		$display("[%g] Test: Enviada la cuarta instruccion (Completo)",$time);*/
-		
-		
-		/*instr_agente = trans_especifica;
-		test_agnt_mbx.put(instr_agente);
-		$display("[%g] Test: Enviada la quinta instruccion (trans_especifica)",$time);*/
-		
+		case(instr_agente)
+			genericos:begin
+				test_agnt_mbx.put(instr_agente);
+				$display("[%g] Test: Enviada la primera instruccion (genericos)",$time);
+			end
+			
+			
+			broadcast_inst:begin
+				test_agnt_mbx.put(instr_agente);
+				$display("[%g] Test: Enviada la segunda instruccion (broadcast_inst)",$time);
+			end		
+			
+			
+			Rst_aleatorio:begin
+				test_agnt_mbx.put(instr_agente);
+				$display("[%g] Test: Enviada la tercera instruccion (Rst_aleatorio)",$time);
+			end		
+			
+			Completo:begin
+				test_agnt_mbx.put(instr_agente);
+				$display("[%g] Test: Enviada la cuarta instruccion (Completo)",$time);
+			end			
+			
+			trans_especifica:begin
+				test_agnt_mbx.put(instr_agente);
+				$display("[%g] Test: Enviada la quinta instruccion (trans_especifica)",$time);
+			end
+			default: begin
+				$error("No se seleccionó ninguna instruccion");
+				$finish;
+			end
+
+		endcase
 		
 		
 		#10000
