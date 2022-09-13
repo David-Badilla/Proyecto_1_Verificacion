@@ -2,6 +2,8 @@
 
 class agente #(parameter ancho=16, parameter drvrs=4);
 	trans_dut_mbx agnt_drv_mbx;  	//mbx agente - driver
+	trans_dut_mbx agente_checker_mbx; 
+
 	instrucciones_agente_mbx test_agent_mbx; //mbx test - agente
 	
 	int num_transacciones;
@@ -44,6 +46,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 							transaccion.tipo=generico; // se fuerza a que sea de tipo generico
 							transaccion.print("Agente:transaccion creada");
 							agnt_drv_mbx.put(transaccion);
+							agente_checker_mbx.put(transaccion);
 						end
 						
 					end
@@ -58,6 +61,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 							transaccion.destino=broadcast_id;  //define que sea de tipo broadcast
 							transaccion.print("Agente:transaccion (broadcast) creada");
 							agnt_drv_mbx.put(transaccion);
+							agente_checker_mbx.put(transaccion);
 						end
 						
 					end
@@ -70,7 +74,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 							transaccion.tipo=reset;// se fuerza a que sea de tipo reset
 							transaccion.print("Agente:transaccion (reset) creada");
 							agnt_drv_mbx.put(transaccion);
-							
+							agente_checker_mbx.put(transaccion);
 						end
 						
 						
@@ -86,7 +90,8 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 								transaccion.destino=broadcast_id; // para colocar el identificador de broadcast
 							end
 							transaccion.print("Agente:transaccion (completa) creada");
-							agnt_drv_mbx.put(transaccion);	
+							agnt_drv_mbx.put(transaccion);
+							agente_checker_mbx.put(transaccion);	
 						end
 							
 					end
@@ -100,7 +105,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 						transaccion.retardo= ret_spec;
 						transaccion.print("Agente:transaccion (Especifica) creada");
 						agnt_drv_mbx.put(transaccion);		
-												
+						agente_checker_mbx.put(transaccion);						
 					end			
 					
 				endcase

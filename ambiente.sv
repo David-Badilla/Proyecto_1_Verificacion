@@ -3,7 +3,7 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 	driver #(.ancho(ancho), .drvrs(drvrs)) driver_inst;
 	agente #(.ancho(ancho), .drvrs(drvrs)) agente_inst;
 	//score_board #(.ancho(ancho), .drvrs(drvrs)) scoreboard_inst;
-	//Checker #(.ancho(ancho), .drvrs(drvrs)) Checker_inst; //OJO CON LA MAYUSCULA
+	checkr #(.ancho(ancho), .drvrs(drvrs)) Checker_inst; //OJO CON LA MAYUSCULA
 	
 	
 	//-----------Declaracion de la interface que conecta el dut-----------
@@ -15,7 +15,8 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 	trans_sb_mbx  chkr_sb_mbx;				//Mailbox del checker al scoreboard
 	instrucciones_agente_mbx test_agnt_mbx;	//Mailbox del test al agente
 	solicitud_sb_mbx test_sb_mbx;			//Mailbox del test al scoreboard
-	
+	trans_dut_mbx agente_checker_mbx;
+
 	function new();
 		//-----------Inicializando los mailboxes-----------
 		agnt_drv_mbx	= new();
@@ -23,12 +24,13 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 		chkr_sb_mbx		= new();
 		test_agnt_mbx	= new();
 		test_sb_mbx		= new();
+		agente_checker_mbx=new();
 		
 		//-----------Inicializando los componentes del ambiente (modulos)---
 		driver_inst			= new();
 		agente_inst			= new();
 		//scoreboard_inst	= new();
-		//Checker_inst		= new();
+		Checker_inst		= new();
 		
 		
 		//-----------Conexion de las interfaces y mailboxes en el ambiente---
@@ -39,10 +41,11 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 		
 		agente_inst.test_agent_mbx	= test_agnt_mbx;
 		agente_inst.agnt_drv_mbx	= agnt_drv_mbx;
+		agente_inst.agente_checker_mbx	= agente_checker_mbx;
 		
-		
-		//Checker_inst.chkr_sb_mbx 	= chkr_sb_mbx;		//Faltan hacer
-		//Checker_inst.drv_chkr_mbx	= drv_chkr_mbx;
+		Checker_inst.chkr_sb_mbx 	= chkr_sb_mbx;		//Faltan hacer
+		Checker_inst.drv_chkr_mbx	= drv_chkr_mbx;
+		Checker_inst.agente_checker_mbx	= agente_checker_mbx;
 		
 		//scoreboard_inst.chkr_sb_mbx	= chkr_sb_mbx;
 		//scoreboard_inst.test_sb_mbx	= test_sb_mbx;
@@ -54,7 +57,7 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 		fork
 			driver_inst.run();
 			agente_inst.run();
-			//Checker_inst.run();
+			Checker_inst.run();
 			//scoreboard_inst.run();
 		join_none
 	

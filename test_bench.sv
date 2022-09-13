@@ -2,13 +2,15 @@
 `include "paquetes.sv"
 `include "Library.sv"
 `include "interfase.sv"
+`include "checkr.sv"	//HAY QUE ACOMODARLOS DONDE NO HAYA ERROR EN ORDEN
 `include "driver-monitor.sv"
 `include "agente.sv"
 `include "ambiente.sv"
 `include "test.sv"
 
 
-`include "checker.sv"	//HAY QUE ACOMODARLOS DONDE NO HAYA ERROR EN ORDEN
+
+
 
 `include "score_board.sv"
 
@@ -24,8 +26,8 @@ module test_bench;
 	parameter ancho = 16;
 	parameter drvrs =  4;
 	parameter broadcast_indi = {8{1'b1}};
-	int numero_instrucciones=3;
-	int max_retardo=5;
+	int numero_instrucciones=10;
+	int max_retardo=20;
 	instrucciones_agente instr_agente = genericos; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica
 
 

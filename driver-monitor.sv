@@ -38,12 +38,12 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo
 			@(posedge vif.clk);
 				forever begin
 					trans_dut #(.ancho(ancho),.drvrs(drvrs)) recibido;
-                    $display("[%g] El Driver espera una transaccion",$time);
+                   // $display("[%g] El Driver espera una transaccion",$time);
           
 					//Espera a recibir un mensaje del agente
 					agnt_drv_mbx.get(recibido);
 					recibido.print("Driver: Transaccion recibida"); //Desplega informacion de mensaje
-					$display("transacciones pendientes en mbx agnt-driver = %g",agnt_drv_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
+					//$display("transacciones pendientes en mbx agnt-driver = %g",agnt_drv_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
 					drv_fifos_mbx[recibido.fuente].put(recibido); //mete la transaccion al mailbox correspondiente a la fuente
 					@(posedge vif.clk);
 				
@@ -134,7 +134,7 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo
 	                        		trans_recibida[i].fuente = i;
 									trans_recibida[i].print("Driver: Se coloca transaccion para el checker");
 	                       	 		drv_chkr_mbx.put(trans_recibida[i]);
-									$display("transacciones pendientes en mbx driver-checker = %g",drv_chkr_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
+									//$display("transacciones pendientes en mbx driver-checker = %g",drv_chkr_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
 	                    		end
 
 	            			end 
