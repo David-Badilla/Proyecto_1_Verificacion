@@ -5,11 +5,11 @@ class score_board #(parameter ancho = 16,parameter drvrs=4);
     trans_sb scoreboard[$]; //array para controlar el scoreboard
     trans_sb scoreboard_aux[$];
     trans_sb aux_trans;
-    shortreal retardo_promedio;    // Esto hay que analizar los paquetes.
+    shortreal retardo_promedio[drvrs-1:0];    // Esto hay que analizar los paquetes.
     solicitud_sb orden;
     int tamano_sb;
-    int trans_completas=0;
-    int retardo_total=0;   // analizar lo de los paquetes.
+    int trans_completas[drvrs-1:0];
+    int retardo_total[drvrs-1:0];   // analizar lo de los paquetes.
     
 
 	integer f,i;
@@ -22,20 +22,23 @@ class score_board #(parameter ancho = 16,parameter drvrs=4);
 				chkr_sb_mbx.get(trans_entrante);
 				trans_entrante.print("Score Board: transaccion recibida del checker");
 				if (trans_entrante.completado)begin
-					retardo_total = retardo_total + trans_entrante.latencia;
-					trans_completas+=1;
+							
+					retardo_total[trans_entrante.Destino] = retardo_total[trans_entrante.Destino] + trans_entrante.latencia;
+					trans_completas[trans_entrante.Destino]+=1;
 				end
 				scoreboard.push_back(trans_entrante);
 			end else begin
 				if(test_sb_mbx.num()>0)begin
 					test_sb_mbx.get(orden);
+					
 					case (orden)
 						retraso_promedio:begin
 							//Retraso promedio en la entrega de paquetes x terminal y general en función de la cantidad de dispositivos y las profundidad de las FIFOs.
 							$display("Score board: Recibida orden retardo promedio");
-							retardo_promedio=retardo_total / trans_completas;
-							$display("[%g] Score board: El retardo promedio es: %0.3f",$time,retardo_promedio);
-									
+							for(int i=0;i<drvrs;i++	)begin				
+								retardo_promedio[i]=retardo_total[i] / trans_completas[i];
+								$display("[%g] Score board: El retardo promedio en dispositivo[%g] es: %0.3f",$time,i,retardo_promedio[i]);	
+							end
 						end
 
 

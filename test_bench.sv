@@ -27,9 +27,10 @@ module test_bench;
 	parameter ancho = 16;
 	parameter drvrs =  4;
 	parameter broadcast_indi = {8{1'b1}};
-	int numero_instrucciones=5;
+	int numero_instrucciones=1000;
 	int max_retardo=20;
-	instrucciones_agente instr_agente = genericos; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica
+	instrucciones_agente instr_agente = genericos; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica uno_todos,todos_uno
+	solicitud_sb instr_sb = retraso_promedio;//retraso_promedio, bwmax, bwmin, reporte_completo;
 
 
 
@@ -57,7 +58,7 @@ module test_bench;
 		t0.ambiente_instancia._if=_if;
 		t0.ambiente_instancia.driver_inst.vif=_if;
 		t0.ambiente_instancia.agente_inst.num_transacciones=numero_instrucciones;
-
+		t0.instr_sb=instr_sb;
 		//Conexiones parametros pruebas
 		t0.ambiente_instancia.agente_inst.broadcast_id=broadcast_indi;
 		t0.ambiente_instancia.agente_inst.max_retardo=max_retardo;

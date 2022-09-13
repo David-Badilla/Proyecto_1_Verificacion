@@ -1,14 +1,14 @@
 ///////////////////////////////////////////////
 //Definicion tipos posibles de transacciones 
 ///////////////////////////////////////////////
-typedef enum {generico, broadcast, reset} tipo_trans;
+typedef enum {generico, broadcast, reset,uno_todo,todo_uno} tipo_trans;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Paquete TransDUT (pck1) Agente/generador ---> Driver/Monitor y Diver/Monitor ---> Checker
 ///////////////////////////////////////////////////////////////////////////////////////////
 class trans_dut #(parameter ancho=16, parameter drvrs=4);
 	rand tipo_trans tipo;
-	rand bit [ancho-9:0] dato; //-6 para los 5 bits que hay que concatenar de direccion
+	rand bit [ancho-9:0] dato; //-9 para los 8 bits que hay que concatenar de direccion
 	rand bit [7:0] fuente;
 	rand bit [7:0] destino;
 	rand int retardo;
@@ -17,8 +17,8 @@ class trans_dut #(parameter ancho=16, parameter drvrs=4);
 	int max_retardo;	//Retardo maximo de 20
 	
 	constraint const_retardo {retardo<max_retardo; retardo>0;}
-	constraint const_destino {destino != fuente; destino<drvrs; destino>=0;} 			 // Restriccion del destino 
-	constraint const_fuente {fuente<drvrs;fuente>=0;} //la fuente debe existir 
+	constraint const_destino {destino != fuente; fuente inside{[0:drvrs-1]};}/*destino<drvrs; destino>=0;}*/ 			 // Restriccion del destino 
+	constraint const_fuente {destino inside{[0:drvrs-1]};} //la fuente debe existir 
 
 
 
@@ -95,7 +95,7 @@ endclass
 ///////////////////////////////////////////////
 // Definicion de la transaccion pck4 Test-->Agente/Generador usando typedef 
 ///////////////////////////////////////////////
-typedef enum {genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica} instrucciones_agente; //completo es todo junto ***Se le cambio el nombre al broadcast porque ya habia uno igual***
+typedef enum {genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica,uno_todos,todos_uno} instrucciones_agente; //completo es todo junto ***Se le cambio el nombre al broadcast porque ya habia uno igual***
 
 ///////////////////////////////////////////////
 // Transaccion pck5 Test --> Scoreboard
@@ -108,9 +108,9 @@ typedef enum {retraso_promedio, bwmax, bwmin, reporte_completo} solicitud_sb;
 ///////////////////////////////////////////////
 // Definicion mailbox 
 ///////////////////////////////////////////////
-typedef mailbox #(trans_dut) trans_dut_mbx;  //agente/generador ===> driver/monitor ===>Checker
+typedef mailbox #(trans_dut .ancho(ancho),.drvrs(drvrs)) trans_dut_mbx;  //agente/generador ===> driver/monitor ===>Checker
 
-typedef mailbox #(trans_sb) trans_sb_mbx;  //Checker ===> Scoreboard
+typedef mailbox #(trans_sb .ancho(ancho),.drvrs(drvrs)) trans_sb_mbx;  //Checker ===> Scoreboard
 
 typedef mailbox #(instrucciones_agente) instrucciones_agente_mbx;  //Test===> Agente/Generador
 typedef mailbox #(solicitud_sb) solicitud_sb_mbx;//Test===> Scoreboard

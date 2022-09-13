@@ -61,9 +61,106 @@ class checkr #(parameter drvrs = 4, parameter ancho = 16);
 //		                    $display("Esperado %h, Leido %h", transaccion.dato, dut_emulado.dato);
 						end
 					end 
-                end  
+				end
+					uno_todos:begin
+						if(emul_dut.size()>0)begin
+							//dut_emulado = emul_dut.pop_back();
+							listo=0;//variable constrol para ver si se encuentra en la cola o no
+							for (int i=0;i<emul_dut.size();i++) begin
+				                if (transaccion.dato  == emul_dut[i].dato && transaccion.destino==emul_dut[i].destino)begin
+									listo=1;//indica que ya se encontro la transaccion
+									dut_emulado =emul_dut[i];
+									emul_dut.delete(i); //borra el lugar en la cola para no volver a repetirlo
+									to_sb.tipo = dut_emulado.tipo;
+				                    to_sb.dato_enviado = dut_emulado.dato;
+				                    to_sb.Fuente = dut_emulado.fuente;
+									to_sb.retardo=dut_emulado.retardo;
+									to_sb.procedencia=transaccion.fuente;
+				                    to_sb.Destino = transaccion.destino;
+				                    to_sb.tiempo_envio = dut_emulado.tiempo_envio;
+				                    to_sb.tiempo_recibido = transaccion.tiempo_recibido;
+									to_sb.calc_latencia();
+									to_sb.completado=1;
+				                    
+				                    to_sb.print("Checker: Transaccion completada **ENVIADA AL SCOREBOARD**");
+				                    chkr_sb_mbx.put(to_sb); //para poner en mailbox la info de to_sb
+								end
+
+							end
+					             
+						if(listo==0) begin
+							transaccion.print("Dato que se transmite no calza con el esperado");
+//		                    $display("Esperado %h, Leido %h", transaccion.dato, dut_emulado.dato);
+						end
+					end
+				end
+					todos_uno:begin
+						if(emul_dut.size()>0)begin
+							//dut_emulado = emul_dut.pop_back();
+							listo=0;//variable constrol para ver si se encuentra en la cola o no
+							for (int i=0;i<emul_dut.size();i++) begin
+				                if (transaccion.dato  == emul_dut[i].dato && transaccion.destino==emul_dut[i].destino)begin
+									listo=1;//indica que ya se encontro la transaccion
+									dut_emulado =emul_dut[i];
+									emul_dut.delete(i); //borra el lugar en la cola para no volver a repetirlo
+									to_sb.tipo = dut_emulado.tipo;
+				                    to_sb.dato_enviado = dut_emulado.dato;
+				                    to_sb.Fuente = dut_emulado.fuente;
+									to_sb.retardo=dut_emulado.retardo;
+									to_sb.procedencia=transaccion.fuente;
+				                    to_sb.Destino = transaccion.destino;
+				                    to_sb.tiempo_envio = dut_emulado.tiempo_envio;
+				                    to_sb.tiempo_recibido = transaccion.tiempo_recibido;
+									to_sb.calc_latencia();
+									to_sb.completado=1;
+				                    
+				                    to_sb.print("Checker: Transaccion completada **ENVIADA AL SCOREBOARD**");
+				                    chkr_sb_mbx.put(to_sb); //para poner en mailbox la info de to_sb
+								end
+
+							end
+					             
+						if(listo==0) begin
+							transaccion.print("Dato que se transmite no calza con el esperado");
+//		                    $display("Esperado %h, Leido %h", transaccion.dato, dut_emulado.dato);
+						end
+					end 
+					end
+					reset:begin
+						if(emul_dut.size()>0)begin
+							//dut_emulado = emul_dut.pop_back();
+							listo=0;//variable constrol para ver si se encuentra en la cola o no
+							for (int i=0;i<emul_dut.size();i++) begin
+				                if (transaccion.dato  == emul_dut[i].dato && transaccion.destino==emul_dut[i].destino)begin
+									listo=1;//indica que ya se encontro la transaccion
+									dut_emulado =emul_dut[i];
+									emul_dut.delete(i); //borra el lugar en la cola para no volver a repetirlo
+									to_sb.tipo = dut_emulado.tipo;
+				                    to_sb.dato_enviado = dut_emulado.dato;
+				                    to_sb.Fuente = dut_emulado.fuente;
+									to_sb.retardo=dut_emulado.retardo;
+									to_sb.procedencia=transaccion.fuente;
+				                    to_sb.Destino = transaccion.destino;
+				                    to_sb.tiempo_envio = dut_emulado.tiempo_envio;
+				                    to_sb.tiempo_recibido = transaccion.tiempo_recibido;
+									to_sb.calc_latencia();
+									to_sb.completado=1;
+				                    
+				                    to_sb.print("Checker: Transaccion completada **ENVIADA AL SCOREBOARD**");
+				                    chkr_sb_mbx.put(to_sb); //para poner en mailbox la info de to_sb
+								end
+
+							end
+					     end        
+						if(listo==0) begin
+							transaccion.print("Dato que se transmite no calza con el esperado");
+//		                    $display("Esperado %h, Leido %h", transaccion.dato, dut_emulado.dato);
+						end
+
+					end
+                 
             endcase      
-        end
+        	end
 		end
 	begin
 		forever begin

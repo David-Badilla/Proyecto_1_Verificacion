@@ -113,7 +113,35 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 						agnt_drv_mbx.put(transaccion);	
 						transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para	
 						agente_checker_mbx.put(transaccion);						
-					end			
+					end		
+					uno_todos:begin
+						for (int i=0;i < num_transacciones;i++)begin
+							transaccion=new;
+							transaccion.max_retardo=max_retardo;
+							transaccion.randomize();
+							transaccion.fuente=0;
+							transaccion.tipo = uno_todo; // se fuerza a que sea de tipo uno todos
+							transaccion.print("Agente:transaccion creada");
+							agnt_drv_mbx.put(transaccion);
+							//#transaccion.retardo
+							transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para checker
+							agente_checker_mbx.put(transaccion);
+						end
+					end
+					todos_uno: begin
+						for (int i=0;i < num_transacciones;i++)begin
+							transaccion=new;
+							transaccion.max_retardo=max_retardo;
+							transaccion.randomize();
+							transaccion.destino=0;
+							transaccion.tipo=todo_uno; // se fuerza a que sea de tipo todos_uno
+							transaccion.print("Agente:transaccion creada");
+							agnt_drv_mbx.put(transaccion);
+							//#transaccion.retardo
+							transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para checker
+							agente_checker_mbx.put(transaccion);
+						end
+					end
 					
 				endcase
 				

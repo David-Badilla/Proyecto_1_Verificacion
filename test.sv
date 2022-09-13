@@ -75,6 +75,15 @@ class test #(parameter ancho=16 , parameter drvrs=4);
 				test_agnt_mbx.put(instr_agente);
 				$display("[%g] Test: Enviada la quinta instruccion (trans_especifica)",$time);
 			end
+			uno_todos:begin
+				test_agnt_mbx.put(instr_agente);
+				$display("[%g] Test: Enviada la sexta instruccion (uno_todos)",$time);
+			end
+			
+			todos_uno:begin
+				test_agnt_mbx.put(instr_agente);
+				$display("[%g] Test: Enviada la setima instruccion (todos_uno)",$time);
+			end
 			default: begin
 				$error("No se seleccionó ninguna instruccion");
 				$finish;
@@ -87,10 +96,14 @@ class test #(parameter ancho=16 , parameter drvrs=4);
 		$display("[%g] Test: Se alcanza el tiempo limite",$time);
 		
 		//Inician instrucciones al scoreboard para reporte 
-		
-		instr_sb = reporte_completo; //Pueden ser (bwmax) (bwmin) (reporte_completo)
-		test_sb_mbx.put(instr_sb);
-		
+		case(instr_sb)
+			reporte_completo: test_sb_mbx.put(instr_sb); //Pueden ser (bwmax) (bwmin) (reporte_completo)
+			retraso_promedio:test_sb_mbx.put(instr_sb);
+			bwmax:test_sb_mbx.put(instr_sb);
+			bwmin:test_sb_mbx.put(instr_sb);
+		endcase		
+
+
 		//instr_sb = bwmax; //Pueden ser (bwmax) (bwmin) (reporte_completo)
 		//test_sb_mbx.put(instr_sb);
 		#20
