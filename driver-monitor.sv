@@ -1,5 +1,5 @@
 
-class driver #(parameter drvrs=5, parameter ancho=16, parameter Profundidad_fifo=1000000);
+class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo=1000000);
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
 	trans_dut_mbx agnt_drv_mbx;
 	trans_dut_mbx drv_chkr_mbx;
@@ -35,13 +35,13 @@ class driver #(parameter drvrs=5, parameter ancho=16, parameter Profundidad_fifo
 		begin
 			@(posedge vif.clk);
 				forever begin
-					trans_dut #(.ancho(ancho),.drvrs(drvrs)) recibido=new();
+					trans_dut #(.ancho(ancho),.drvrs(drvrs)) recibido=new;
                    // $display("[%g] El Driver espera una transaccion",$time);
           
 					//Espera a recibir un mensaje del agente
 					agnt_drv_mbx.get(recibido);
 					recibido.print("Driver: Transaccion recibida"); //Desplega informacion de mensaje
-					//$display("transacciones pendientes en mbx agnt-driver = %g",agnt_drv_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
+					$display("	transacciones pendientes en mbx agnt-driver = %g",agnt_drv_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
 					drv_fifos_mbx[recibido.fuente].put(recibido); //mete la transaccion al mailbox correspondiente a la fuente
 					@(posedge vif.clk);
 				
@@ -49,19 +49,18 @@ class driver #(parameter drvrs=5, parameter ancho=16, parameter Profundidad_fifo
 		end
       
       //Proceso de los FIFO 
-		begin 
-        // Generacion de subprocesos
+		begin  // ############### Hijo para Generacion de subprocesos ##############
         	for (int j = 0; j < drvrs; j++) begin
                     automatic int i = j;
 					fifo_salida[i] = new(); 
         	  fork 
          
-        	    begin //Inicia hijo para manejo de retardo
+        	    begin //-------------------Inicia hijo para manejo de retardo-------------------
 	    	      automatic bit [ancho-1:0] paquete; //Variable de datos para la fifo de entrada
 	          int delay = 0; //variable de retraso
 	                        @(posedge vif.clk);
 	                        forever begin
-	                            transaccion[i]=new(); 
+	                            transaccion[i]=new; 
 	                            delay = 0;  
 	                            @(posedge vif.clk);
 	                            drv_fifos_mbx[i].get(transaccion[i]); //Saca la transaccion actual del mbx                          
@@ -71,8 +70,8 @@ class driver #(parameter drvrs=5, parameter ancho=16, parameter Profundidad_fifo
 	                          
 	            				//Ciclos de retraso
 	                            while(delay <= transaccion[i].retardo)begin
-									if(transaccion[i].tipo==reset) vif.rst=1;
-	                              	if(delay >= transaccion[i].retardo)begin
+									if(transaccion[i].tipo==reset) vif.rst=1;  //Revisa si el tipo es reset para aplicarlo durante el retardo
+	                              	if(delay == transaccion[i].retardo)begin //Cuando se completa el retardo
 										vif.rst=0;
 	                                    drv_interfaz_fifo[i].push(paquete); // se coloca el dato en la fifo de entrada 
 	                                    break;  
@@ -81,10 +80,9 @@ class driver #(parameter drvrs=5, parameter ancho=16, parameter Profundidad_fifo
 	                                delay =  delay + 1;
 	            				end
 	                        end
-	                    end
+	                    end//-------------------Termina hijo manejo de retardo-------------------
 	        
-	                    begin//Hijos para manejo de pop
-	                        bit [ancho-1:0] paquete = {ancho{1'b0}};
+	                    begin//*****************Hijos para manejo de pop*************************
 	                        @(posedge vif.clk);
 	                      forever begin
 	                        	
@@ -103,44 +101,42 @@ class driver #(parameter drvrs=5, parameter ancho=16, parameter Profundidad_fifo
 	                            end
 	                        
 	                        end
-	                    end
+	                    end// *****************Temina hijo manejos de pop****************************
 
 
 
-						begin    // Hijo manejo de push (Monitor)                              
+						begin // +++++++++++++++++++Hijo manejo de push (Monitor)++++++++++++++++++++++++++
 	          				@(posedge vif.clk);
 	            			forever begin                 
 	                          	
-	                          	@(vif.push[0][i]);
+	                          	@(vif.push[0][i]); //Espera a recibir un push
 	                          	//PUSH a la fifo del dato recibido del dut
 	                              	fifo_salida[i].push(vif.D_push[0][i]);
 									@(posedge vif.clk);
 									@(posedge vif.clk);
 	                        end
-	                    end
-	                  	begin
+	                    end// +++++++++++++++++++Termina Hijo manejo de push (Monitor)++++++++++++++++++++++++++
+	                  	begin //----------------Inicia hijo que maneja el envio al checker-----------------------
 	                      	@(posedge vif.clk);
 	                    	forever begin
 	                          	//POP de la fifo de salida para enviarla al mbx checher
 								trans_recibida[i] = new();
 	                          	@(posedge vif.clk);
 	                    		if(fifo_salida[i].get_pndg())begin
-	                              	temporal[i] = fifo_salida[i].pop();
+	                              	temporal[i] = fifo_salida[i].pop();  //Recibe de la fifo de salida el destino + dato  
 									trans_recibida[i].destino=temporal[i][ancho-1:ancho-8];
 	                        		trans_recibida[i].dato = temporal[i][ancho-9:0];
-									trans_recibida[i].tipo=0;
 	                        		trans_recibida[i].tiempo_recibido = $time;
 	                        		trans_recibida[i].fuente = i;
 									trans_recibida[i].print("Driver: Se coloca transaccion para el checker");
 	                       	 		drv_chkr_mbx.put(trans_recibida[i]);
 									//$display("transacciones pendientes en mbx driver-checker = %g",drv_chkr_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
 	                    		end
-
 	            			end 
-	                    end
+	                    end //----------------Termina hijo que maneja el envio al checker-----------------------
 	                join_none //join cada dispositivo-intefaz
-	    		end //end del for
-      		end
+	    		end //end del for que genera todos los dispositivos
+      		end // ############### Hijo para Generacion de subprocesos ############## 
     	join_none //join de cada proceso (recibir datos-retardo-hacer pop - push) 
   	endtask
 endclass

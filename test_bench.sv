@@ -31,12 +31,12 @@ module test_bench;
 	int numero_instrucciones=8;
 	int max_retardo=20;
 	instrucciones_agente instr_agente = genericos; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica uno_todos,todos_uno
-	solicitud_sb instr_sb = bwmax;//retraso_promedio, bwmax, bwmin, reporte_completo;
+	solicitud_sb instr_sb = retraso_promedio;//retraso_promedio, bwmax, bwmin, reporte_completo;
 
 
 	
 
-//Variables para transaccion especifica
+	//Variables para transaccion especifica
 	tipo_trans tpo_spec = generico;	//generico, broadcast, reset,uno_todo,todo_uno
 	bit [7:0] fte_spec = 1;
 	bit [7:0] dest_spec=2;
