@@ -45,7 +45,7 @@ endclass
 /////////////////////////////////////////////////////////////////////
 // Definicion del paquete Trans_sb Checker--> ScoreBoard 
 /////////////////////////////////////////////////////////////////////
-class trans_sb #(parameter ancho = 16);
+class trans_sb #(parameter ancho = 16, parameter drvrs = 4);
 	tipo_trans tipo;
 	bit [ancho-9:0] dato_enviado;
 	bit [7:0] Fuente;
@@ -135,7 +135,7 @@ class fifo #(parameter pile_size = 5, parameter pckg_sz = 32);
 	bit pndg;			
 	bit [pckg_sz-1:0] pile [$:pile_size-1];   
 	
-	//Inicializacion de las banderas
+
 	function new();
 		this.pndg = 0;
 		this.fifo_full = 0;
