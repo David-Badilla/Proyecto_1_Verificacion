@@ -27,9 +27,9 @@ module test_bench;
 	parameter ancho = 16;
 	parameter drvrs =  4;
 	parameter broadcast_indi = {8{1'b1}};
-	int numero_instrucciones=100;
+	int numero_instrucciones=10;
 	int max_retardo=20;
-	instrucciones_agente instr_agente = trans_especifica; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica uno_todos,todos_uno
+	instrucciones_agente instr_agente = genericos; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica uno_todos,todos_uno
 	solicitud_sb instr_sb = reporte_completo;//retraso_promedio, bwmax, bwmin, reporte_completo;
 
 	
