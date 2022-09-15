@@ -1,2 +1,3 @@
 t_envio, procedencia, destino ,t_recibido, retraso, dato 
-         27,           2,   2,         605,          25,   8 
+         10,           4,   4,         375,           8,  22 
+         10,           0,   0,         605,           8,  36 

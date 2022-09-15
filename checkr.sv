@@ -1,10 +1,12 @@
-class checkr #(parameter drvrs = 4, parameter ancho = 16);
+class checkr #(parameter drvrs = 5, parameter ancho = 16);
     trans_dut #(.ancho(ancho),.drvrs(drvrs)) transaccion;
 	trans_dut #(.ancho(ancho),.drvrs(drvrs)) transaccionemul;
     trans_dut #(.ancho(ancho),.drvrs(drvrs)) dut_emulado; //para enviar paquetes de la transaccion emulada que debe hacer el checker del dut
     trans_sb #(.ancho(ancho)) to_sb;
     trans_dut #(.ancho(ancho),.drvrs(drvrs)) emul_dut[$];
-    trans_dut_mbx drv_chkr_mbx; //puntero del mailboxer no inicializado aun
+    
+
+	trans_dut_mbx drv_chkr_mbx; //puntero del mailboxer no inicializado aun
     trans_sb_mbx chkr_sb_mbx; //puntero del mail boxer no inicializado aun
 	trans_dut_mbx agente_checker_mbx;
     int cont;
@@ -17,9 +19,9 @@ class checkr #(parameter drvrs = 4, parameter ancho = 16);
     task run;
         $display("[%g] El checker fue inicializado",$time);
         to_sb = new();
-		dut_emulado=new;
-		transaccion=new;
-		transaccionemul=new;
+		dut_emulado=new();
+		transaccion=new();
+		transaccionemul=new();
 	fork
 		begin
         forever begin

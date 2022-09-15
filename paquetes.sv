@@ -6,7 +6,7 @@ typedef enum {generico, broadcast, reset,uno_todo,todo_uno} tipo_trans;
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Paquete TransDUT (pck1) Agente/generador ---> Driver/Monitor y Diver/Monitor ---> Checker
 ///////////////////////////////////////////////////////////////////////////////////////////
-class trans_dut #(parameter ancho=16, parameter drvrs=4);
+class trans_dut #(parameter ancho=16, parameter drvrs=5);
 	rand tipo_trans tipo;
 	rand bit [ancho-9:0] dato; //-9 para los 8 bits que hay que concatenar de direccion
 	rand bit [7:0] fuente;
@@ -56,6 +56,20 @@ class trans_sb #(parameter ancho = 16);
 	int procedencia;
 	int latencia;
 	bit completado;
+		
+	function new();
+		this.tipo = generico;
+		this.dato_enviado=0;
+		this.Fuente=0;
+		this.Destino=0;
+		this.tiempo_envio=0;
+		this.tiempo_recibido=0;
+		this.retardo=0;
+		this.procedencia=0;
+		this.latencia=0;
+		this.completado=0;
+		
+	endfunction
 	
 	function clean();
 		this.dato_enviado=0;

@@ -1,6 +1,6 @@
 
 
-class agente #(parameter ancho=16, parameter drvrs=4);
+class agente #(parameter ancho=16, parameter drvrs=5);
 	trans_dut_mbx agnt_drv_mbx;  	//mbx agente - driver
 	trans_dut_mbx agente_checker_mbx; 
 
@@ -40,7 +40,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 	
 					genericos: begin //aleatorio comun
 						for (int i=0;i < num_transacciones;i++)begin
-							transaccion=new;
+							transaccion=new();
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.tipo=generico; // se fuerza a que sea de tipo generico
@@ -56,7 +56,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 					
 					broadcast_inst: begin  // Enviar packetes exclusivos de broadcast
 						for (int i=0;i <num_transacciones;i++)begin  //LIMITAR A 10 LO DIJO EL PROFE
-							transaccion=new;
+							transaccion=new();
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.tipo=broadcast;
@@ -71,7 +71,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 					
 					Rst_aleatorio: begin
 						for (int i=0;i < num_transacciones;i++)begin
-							transaccion=new;
+							transaccion=new();
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.tipo=reset;// se fuerza a que sea de tipo reset
@@ -88,7 +88,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 					
 					Completo: begin
 						for (int i=0;i < num_transacciones;i++)begin
-							transaccion=new;
+							transaccion=new();
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize(); // aqui mismo de aleatoriza si es generico , broadcast o reset
 							if(transaccion.tipo==broadcast) begin 
@@ -103,7 +103,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 					end
 					
 					trans_especifica: begin
-						transaccion=new;
+						transaccion=new();
 						transaccion.tipo=tpo_spec;
 						transaccion.fuente= fte_spec;
 						transaccion.destino= dest_spec;
@@ -117,7 +117,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 					end		
 					uno_todos:begin
 						for (int i=0;i < num_transacciones;i++)begin
-							transaccion=new;
+							transaccion=new();
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.fuente=0;
@@ -131,7 +131,7 @@ class agente #(parameter ancho=16, parameter drvrs=4);
 					end
 					todos_uno: begin
 						for (int i=0;i < num_transacciones;i++)begin
-							transaccion=new;
+							transaccion=new();
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.destino=0;

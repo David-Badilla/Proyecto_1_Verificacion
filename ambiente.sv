@@ -1,4 +1,4 @@
-class ambiente #(parameter ancho=16 , parameter drvrs=4);
+class ambiente #(parameter ancho=16 , parameter drvrs=5);
 	//-----------Componentes del ambiente---------------------------------
 	driver #(.ancho(ancho), .drvrs(drvrs)) driver_inst;
 	agente #(.ancho(ancho), .drvrs(drvrs)) agente_inst;
@@ -10,8 +10,8 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 	virtual bus_if #(.drvrs(drvrs), .pckg_sz(ancho)) _if;
 	
 	//-----------Declaracion de los mailboxes-----------------------------
-	trans_dut_mbx agnt_drv_mbx;				//Mailbox del agente al driver
-	trans_dut_mbx drv_chkr_mbx;				//Mailbox del driver al checker
+	trans_dut_mbx  agnt_drv_mbx;				//Mailbox del agente al driver
+	trans_dut_mbx  drv_chkr_mbx;				//Mailbox del driver al checker
 	trans_sb_mbx  chkr_sb_mbx;				//Mailbox del checker al scoreboard
 	instrucciones_agente_mbx test_agnt_mbx;	//Mailbox del test al agente
 	solicitud_sb_mbx test_sb_mbx;			//Mailbox del test al scoreboard
@@ -22,8 +22,8 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 		agnt_drv_mbx	= new();
 		drv_chkr_mbx	= new();
 		chkr_sb_mbx		= new();
-		test_agnt_mbx	= new();
-		test_sb_mbx		= new();
+		//test_agnt_mbx	= new();
+		//test_sb_mbx		= new();
 		agente_checker_mbx=new();
 		
 		//-----------Inicializando los componentes del ambiente (modulos)---
@@ -43,7 +43,7 @@ class ambiente #(parameter ancho=16 , parameter drvrs=4);
 		agente_inst.agnt_drv_mbx	= agnt_drv_mbx;
 		agente_inst.agente_checker_mbx	= agente_checker_mbx;
 		
-		Checker_inst.chkr_sb_mbx 	= chkr_sb_mbx;		//Faltan hacer
+		Checker_inst.chkr_sb_mbx 	= chkr_sb_mbx;		
 		Checker_inst.drv_chkr_mbx	= drv_chkr_mbx;
 		Checker_inst.agente_checker_mbx	= agente_checker_mbx;
 		

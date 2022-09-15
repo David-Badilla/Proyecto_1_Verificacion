@@ -1,12 +1,10 @@
 
-class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo=1000000);
+class driver #(parameter drvrs=5, parameter ancho=16, parameter Profundidad_fifo=1000000);
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
 	trans_dut_mbx agnt_drv_mbx;
 	trans_dut_mbx drv_chkr_mbx;
 
 	bit [ancho-1:0] temporal[drvrs-1:0];
-	event drvr_done;  //Evento para registrar finalizacion del driver 
-    event msj_sent;
   //Variables para FIFO
 	mailbox drv_fifos_mbx[drvrs-1:0]; //Mailboxes para pasar datos a los procesos hijos
     fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) drv_interfaz_fifo [drvrs-1:0]; //Se instancia la clase de fifo
@@ -37,7 +35,7 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo
 		begin
 			@(posedge vif.clk);
 				forever begin
-					trans_dut #(.ancho(ancho),.drvrs(drvrs)) recibido;
+					trans_dut #(.ancho(ancho),.drvrs(drvrs)) recibido=new();
                    // $display("[%g] El Driver espera una transaccion",$time);
           
 					//Espera a recibir un mensaje del agente
@@ -63,23 +61,19 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo
 	          int delay = 0; //variable de retraso
 	                        @(posedge vif.clk);
 	                        forever begin
-	                            transaccion[i]=new; 
+	                            transaccion[i]=new(); 
 	                            delay = 0;  
 	                            @(posedge vif.clk);
-	                            drv_fifos_mbx[i].get(transaccion[i]); //Saca la transaccion actual del mbx
-								if(transaccion[i].tipo==reset)begin
-									vif.rst=1;
-									@(posedge vif.clk);
-									@(posedge vif.clk);
-									vif.rst=0;
-								end	                            
+	                            drv_fifos_mbx[i].get(transaccion[i]); //Saca la transaccion actual del mbx                          
 								
 								paquete[ancho-1:ancho-8] = transaccion[i].destino;
 	                            paquete[ancho-9:0] = transaccion[i].dato;
 	                          
 	            				//Ciclos de retraso
 	                            while(delay <= transaccion[i].retardo)begin
+									if(transaccion[i].tipo==reset) vif.rst=1;
 	                              	if(delay >= transaccion[i].retardo)begin
+										vif.rst=0;
 	                                    drv_interfaz_fifo[i].push(paquete); // se coloca el dato en la fifo de entrada 
 	                                    break;  
 	              					end
@@ -118,18 +112,16 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo
 	            			forever begin                 
 	                          	
 	                          	@(vif.push[0][i]);
-	                          	//PUSH
-	                    		//if(vif.push[0][idx])begin
+	                          	//PUSH a la fifo del dato recibido del dut
 	                              	fifo_salida[i].push(vif.D_push[0][i]);
 									@(posedge vif.clk);
 									@(posedge vif.clk);
-	                    		//end
 	                        end
 	                    end
 	                  	begin
 	                      	@(posedge vif.clk);
 	                    	forever begin
-	                          	//POP
+	                          	//POP de la fifo de salida para enviarla al mbx checher
 								trans_recibida[i] = new();
 	                          	@(posedge vif.clk);
 	                    		if(fifo_salida[i].get_pndg())begin

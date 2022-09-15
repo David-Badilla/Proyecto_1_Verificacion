@@ -1,5 +1,5 @@
 
-class test #(parameter ancho=16 , parameter drvrs=4);
+class test #(parameter ancho=16 , parameter drvrs=5);
 	instrucciones_agente_mbx test_agnt_mbx;		//Test===> Agente/Generador
 	solicitud_sb_mbx test_sb_mbx;				//Test===> Scoreboard
 	
