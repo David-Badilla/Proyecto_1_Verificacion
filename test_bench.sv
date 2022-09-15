@@ -9,13 +9,6 @@
 `include "ambiente.sv"
 `include "test.sv"
 
-
-
-
-
-
-
-
 	/////////////////////////////////
 	//Modulo para correr la prueba //
 	/////////////////////////////////
@@ -27,14 +20,15 @@ module test_bench;
 	parameter ancho = 16;
 	parameter drvrs =  5;
 	parameter broadcast_indi = {8{1'b1}};
-
-	int numero_instrucciones=8;
+	int numero_instrucciones=10; //En general se utiliza esta para todos menos broadcast
 	int max_retardo=20;
-	instrucciones_agente instr_agente = genericos; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica uno_todos,todos_uno
+	instrucciones_agente instr_agente = Completo; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica, uno_todos,todos_uno
 	solicitud_sb instr_sb = retraso_promedio;//retraso_promedio, bwmax, bwmin, reporte_completo;
-
-
 	
+	
+	
+	//******************HACER CAMBIOS PARA PRUEBAS AQUÍ *********************************
+	int Prueba=1;
 
 	//Variables para transaccion especifica
 	tipo_trans tpo_spec = generico;	//generico, broadcast, reset,uno_todo,todo_uno
@@ -42,7 +36,7 @@ module test_bench;
 	bit [7:0] dest_spec=2;
 	bit [ancho-9:0] dato_spec=8;
 	int ret_spec = 25;
-
+	//***********************************************************************************
 
 
 
@@ -64,9 +58,20 @@ module test_bench;
 	initial begin 
 		clk=0;
 		t0=new();
+
+
+		case(Prueba)
+			1:begin instr_agente = genericos; instr_sb = retraso_promedio; end
+			2:begin numero_instrucciones = 5; instr_agente =broadcast_inst ; instr_sb = bwmax; end
+			3:begin instr_agente = Rst_aleatorio; instr_sb =retraso_promedio ; end
+			4:begin instr_agente = Completo; instr_sb = retraso_promedio; end
+			5:begin instr_agente = trans_especifica; instr_sb = reporte_completo ; end
+			6:begin instr_agente = uno_todos; instr_sb = reporte_completo; end
+			7:begin instr_agente = todos_uno; instr_sb = reporte_completo; end
+		endcase
+
 		//Conexiones instancias
 		t0._if = _if;		
-		
 		t0.ambiente_instancia.driver_inst.vif=_if;
 
 

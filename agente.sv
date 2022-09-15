@@ -5,7 +5,8 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 	trans_dut_mbx agente_checker_mbx; 
 
 	instrucciones_agente_mbx test_agent_mbx; //mbx test - agente
-	
+	rand int t;
+	constraint const_t {t inside{[0:drvrs-1]};} //Variable para aleatorizar 
 	int num_transacciones;
 	int max_retardo;
 	bit [7:0] broadcast_id; //*****COLOCAR LUEGO COMO PARAMETRO RECIBIDO***
@@ -116,11 +117,12 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 						agente_checker_mbx.put(transaccion);						
 					end		
 					uno_todos:begin
+						this.randomize();
 						for (int i=0;i < num_transacciones;i++)begin
 							transaccion=new();
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
-							transaccion.fuente=0;
+							transaccion.fuente=t;
 							transaccion.tipo = uno_todo; // se fuerza a que sea de tipo uno todos
 							transaccion.print("Agente:transaccion creada");
 							agnt_drv_mbx.put(transaccion);
@@ -130,11 +132,12 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 						end
 					end
 					todos_uno: begin
+						this.randomize();
 						for (int i=0;i < num_transacciones;i++)begin
 							transaccion=new();
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
-							transaccion.destino=0;
+							transaccion.destino=t;
 							transaccion.tipo=todo_uno; // se fuerza a que sea de tipo todos_uno
 							transaccion.print("Agente:transaccion creada");
 							agnt_drv_mbx.put(transaccion);

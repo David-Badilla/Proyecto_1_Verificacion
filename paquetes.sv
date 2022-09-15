@@ -134,22 +134,17 @@ class fifo #(parameter pile_size = 5, parameter pckg_sz = 32);
 	bit fifo_full;	//no hace falta
 	bit pndg;			
 	bit [pckg_sz-1:0] pile [$:pile_size-1];   
-	
-
 	function new();
 		this.pndg = 0;
 		this.fifo_full = 0;
 	endfunction
-
   	function void push(bit [pckg_sz-1:0] mensaje, string tag = ""); //funcion para el push
       	if (pile.size() == pile_size) begin
 			this.fifo_full = 1;
-		end
-		
+		end		
       	pile.push_front(mensaje);
 		this.pndg = 1;
 	endfunction
-
   	function bit[pckg_sz-1:0] pop(string tag = ""); //pop
 		if(pile.size() > 0) begin
 			if(pile.size() == 1) begin			
@@ -157,7 +152,6 @@ class fifo #(parameter pile_size = 5, parameter pckg_sz = 32);
         	end
 			return pile.pop_back;
 		end
-		
 		this.fifo_full = 0;
 	endfunction
   	function bit get_pndg(); //funcion pending

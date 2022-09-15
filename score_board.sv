@@ -106,12 +106,13 @@ class score_board #(parameter ancho = 16,parameter drvrs=5);
 							$display("Score board: Recibida orden Reporte completo");
 							tamano_sb=this.scoreboard.size();
 							f = $fopen("output.csv", "w");
-							$fwrite(f, "t_envio, procedencia, destino ,t_recibido, retraso, dato \n");
+							$fwrite(f, "T_envio  , Fuente,  Procedencia, Destino ,T_recibido, retraso, dato \n");
 							for (int i=0;i<tamano_sb;i++)begin
 								aux_trans=scoreboard.pop_front;
 								//aux_trans.print("SB_reporte:");
-								$fwrite(f, "%d, %d, %d, %d, %d, %d \n", 
+								$fwrite(f, "%d, %d, %d, %d, %d, %d, %d \n", 
 									aux_trans.tiempo_envio, 
+									aux_trans.Fuente,
 									aux_trans.procedencia, 
 									aux_trans.Destino,
 									aux_trans.tiempo_recibido,
