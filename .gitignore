@@ -9,4 +9,10 @@ salida
 salida.daidir/
 ucli.key
 verdi_config_file
+VerdiLog/
+salida.cst/
+inter.fsdb
+novas_dump.log
+novas.conf
+novas.rc
 
