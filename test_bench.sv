@@ -31,6 +31,10 @@ module test_bench;
 	int Prueba=1;
 
 	//Variables para transaccion especifica
+
+
+
+
 	tipo_trans tpo_spec = generico;	//generico, broadcast, reset,uno_todo,todo_uno
 	bit [7:0] fte_spec = 1;
 	bit [7:0] dest_spec=2;
