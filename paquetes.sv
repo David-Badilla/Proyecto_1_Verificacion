@@ -178,3 +178,133 @@ endclass
 	
 	
 	
+	
+	
+	
+	
+class interfaz_dispositivo #(parameter dispositivo = 0, parameter ancho=16;parameter drvrs=4);
+	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
+	parameter Profundidad_fifo =100000;
+	trans_dut_mbx drv_fifos_mbx;
+	fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) drv_interfaz_fifo:
+	fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) fifo_salida;
+	
+	
+	task run();
+		fork
+			begin//-------------------Inicia hijo para manejo de retardo------------------
+				@(posedge vif.clk);
+                forever begin
+                	trans_dut #(.ancho(ancho),.drvrs(drvrs)) transaccion;
+                    int delay = 0;  
+                    @(posedge vif.clk);
+                    drv_fifos_mbx.get(transaccion); //Saca la transaccion actual del mbx                          
+					bit [anchi-1:0] paquete;
+					paquete[ancho-1:ancho-8] = transaccion.destino;
+                    paquete[ancho-9:0] = transaccion.dato;
+                  
+    				//Ciclos de retraso
+                    while(delay <= transaccion.retardo)begin
+						if(transaccion.tipo==reset) vif.rst=1;  //Revisa si el tipo es reset para aplicarlo durante el retardo
+                      	if(delay == transaccion.retardo)begin //Cuando se completa el retardo
+							vif.rst=0;
+                            drv_interfaz_fifo.push(paquete); // se coloca el dato en la fifo de entrada 
+                            break;  
+      					end
+                        @(posedge vif.clk);
+                        delay =  delay + 1;
+    				end
+                end
+			end//-------------------Termina hijo manejo de retardo------------------
+			
+			
+			
+			begin//*****************Hijos para manejo de pop*************************
+				forever begin
+					@(posedge vif.clk);                                       
+					if(vif.pop[0][dispositivo])begin
+						vif.D_pop[0][dispositivo] = drv_interfaz_fifo.pop();
+					  	vif.pndng[0][dispositivo] <= drv_interfaz_fifo.get_pndg();
+					end else begin
+					  	vif.D_pop[0][dispositivo] <= drv_interfaz_fifo.pile[$]; 
+					end
+					//manejo de bandera de pndng
+					if(drv_interfaz_fifo[dispositivo].get_pndg() == 1) begin
+					  	vif.pndng[0][dispositivo] <= 1;
+					end else begin
+					  	vif.pndng[0][dispositivo] <= 0;
+					end
+				end
+			end// *****************Temina hijo manejos de pop****************************
+			
+			
+			
+			begin// +++++++++++++++++++Hijo manejo de push (Monitor)+++++++++++++++++++
+				@(posedge vif.clk);
+				forever begin                 
+				  	@(vif.push[0][dispositivo]); //Espera a recibir un push
+				  	//PUSH a la fifo del dato recibido del dut
+					  	fifo_salida.push(vif.D_push[0][dispositivo]);
+						@(posedge vif.clk);
+						@(posedge vif.clk);
+				end
+			end// +++++++++++++++++++Termina Hijo manejo de push (Monitor)+++++++++++
+			
+			begin//----------------Inicia hijo que maneja el envio al checker-----------------------
+				@(posedge vif.clk);
+				forever begin
+				  	//POP de la fifo de salida para enviarla al mbx checher
+					trans_dut #(.ancho(ancho),.drvrs(drvrs)) trans_recibida;
+				  	@(posedge vif.clk);
+					if(fifo_salida.get_pndg())begin
+					  	temporal = fifo_salida.pop();  //Recibe de la fifo de salida el destino + dato  
+						trans_recibida.destino=temporal[dispositivo][ancho-1:ancho-8];
+						trans_recibida.dato = temporal[dispositivo][ancho-9:0];
+						trans_recibida.tiempo_recibido = $time;
+						trans_recibida.fuente = dispositivo;
+						trans_recibida.print("Driver: Se coloca transaccion para el checker");
+				 		drv_chkr_mbx.put(trans_recibida);
+						//$display("transacciones pendientes en mbx driver-checker = %g",drv_chkr_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
+					end
+				end 
+				
+				
+			end//----------Termina hijo que maneja el envio al checker-----------------------
+		
+		
+		
+		
+		join_none
+	
+	endtask
+	
+	
+	
+	
+endclass 
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
