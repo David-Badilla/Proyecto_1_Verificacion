@@ -22,15 +22,15 @@ module test_bench;
 	parameter ancho = 16;
 	parameter drvrs =  5;
 	parameter [7:0] broadcast_indi = {8{1'b1}};
-	int numero_instrucciones=5; //En general se utiliza esta para todos menos broadcast
+	int numero_instrucciones=10; //En general se utiliza esta para todos menos broadcast
 	int max_retardo=20;
-	instrucciones_agente instr_agente = genericos; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica, uno_todos,todos_uno
+	instrucciones_agente instr_agente = Rst_aleatorio; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica, uno_todos,todos_uno
 	solicitud_sb instr_sb = bwmin;//retraso_promedio, bwmax, bwmin, reporte_completo;
 	
 	
 	
 	//******************HACER CAMBIOS PARA PRUEBAS AQUÍ *********************************
-	int Prueba=0; //Prueba 0 deja pasar los datos por defecto de arriba
+	int Prueba=1; //Prueba 0 deja pasar los datos por defecto de arriba
 
 	//Variables para transaccion especifica
 

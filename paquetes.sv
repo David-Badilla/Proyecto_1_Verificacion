@@ -17,10 +17,8 @@ class trans_dut #(parameter ancho=16, parameter drvrs=5);
 	int max_retardo;	//Retardo maximo de 20
 	
 	constraint const_retardo {retardo<max_retardo; retardo>0;}
-	constraint const_destino {destino != fuente; fuente inside{[0:drvrs-1]};}/*destino<drvrs; destino>=0;}*/ 			 // Restriccion del destino 
-	constraint const_fuente {destino inside{[0:drvrs-1]};} //la fuente debe existir 
-
-
+	constraint const_destino {destino != fuente;destino inside{[0:drvrs-1]}; }/*destino<drvrs; destino>=0;}*/ 			 // Restriccion del destino 
+	constraint const_fuente {fuente inside{[0:drvrs-1]};} //la fuente debe existir 
 
 	function new (tipo_trans tpo = generico, bit [ancho-9:0] dto =0 , bit [7:0] fte = 0 , bit [7:0] dstn=1, int ret=0, int t_envio=0,int t_recibido=0 , int max_ret=20);
 		this.tipo = tpo;
@@ -31,15 +29,11 @@ class trans_dut #(parameter ancho=16, parameter drvrs=5);
 		this.tiempo_envio = t_envio;
 		this.tiempo_recibido = t_recibido;
 		this.max_retardo = max_ret;		
-		
 	endfunction
-	
 	
 	function void print(string tag ="");
 		$display("[%g] %s Tiempo-Envio=%g Tiempo-Recibido=%g Tipo=%s Retardo=%g Fuente=%g Destino=%g dato=0x%g", $time,tag,this.tiempo_envio, this.tiempo_recibido, this.tipo, this.retardo, this.fuente, this.destino, this.dato);
-		
 	endfunction
-		 
 endclass	
 	
 /////////////////////////////////////////////////////////////////////
@@ -123,9 +117,7 @@ typedef enum {retraso_promedio, bwmax, bwmin, reporte_completo} solicitud_sb;
 // Definicion mailbox 
 ///////////////////////////////////////////////
 typedef mailbox #(trans_dut) trans_dut_mbx;  //agente/generador ===> driver/monitor ===>Checker
-
 typedef mailbox #(trans_sb) trans_sb_mbx;  //Checker ===> Scoreboard
-
 typedef mailbox #(instrucciones_agente) instrucciones_agente_mbx;  //Test===> Agente/Generador
 typedef mailbox #(solicitud_sb) solicitud_sb_mbx;//Test===> Scoreboard
 
@@ -133,7 +125,7 @@ typedef mailbox #(solicitud_sb) solicitud_sb_mbx;//Test===> Scoreboard
 class fifo #(parameter pile_size = 5, parameter pckg_sz = 32);
 	bit fifo_full;	//no hace falta
 	bit pndg;			
-	bit [pckg_sz-1:0] pile [$:pile_size-1];   
+	bit [pckg_sz-1:0] pile [$:pile_size-1];  //se crea de esta forma para acceder al primer dato con $  
 	function new();
 		this.pndg = 0;
 		this.fifo_full = 0;
@@ -176,6 +168,7 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
 	trans_dut_mbx drv_fifos_mbx;
 	trans_dut_mbx drv_chkr_mbx;
+	trans_dut_mbx Simulado_driver_checker_mbx;
 	fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) drv_interfaz_fifo;
 	fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) fifo_salida;
 	bit [ancho-1:0] paquete;
@@ -185,12 +178,14 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
 
 	task run();
 		fifo_salida=new;
-		$display("	dispositivo creado[%g]",dispositivo);
-		fork
+		drv_interfaz_fifo=new;
+		//$display("	dispositivo creado[%g]",dispositivo);
+		fork //Inicia los hijos para: Retardo, pop, revision de push y envio al checker
 			begin//-------------------Inicia hijo para manejo de retardo------------------
-				@(posedge vif.clk);
+				//Revisa el mailbox a ver si recibió una transaccion y la coloca en la fifo de entrada luego de haber simulado los ciclos de retardo correspondientes 
+				//@(posedge vif.clk);
                 forever begin
-                	trans_dut #(.ancho(ancho),.drvrs(drvrs)) transaccion =new;
+                	trans_dut #(.ancho(ancho),.drvrs(drvrs)) transaccion =new();
                     delay = 0;  
                     @(posedge vif.clk);
                     drv_fifos_mbx.get(transaccion); //Saca la transaccion actual del mbx                          
@@ -204,6 +199,9 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
                       	if(delay == transaccion.retardo)begin //Cuando se completa el retardo
 							vif.rst=0;
                             drv_interfaz_fifo.push(paquete); // se coloca el dato en la fifo de entrada 
+							transaccion.tiempo_envio=$time;
+							Simulado_driver_checker_mbx.put(transaccion);
+							transaccion.print("		Colocada en para el checker");
                             break;  
       					end
                         @(posedge vif.clk);
@@ -215,6 +213,7 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
 			
 			
 			begin//*****************Hijos para manejo de pop*************************
+				//Revisa siempre si la bandera de pop del dut se activa y el caso que asi sea hace pop en la fifo simulada colocando en el bus Dpop el valor que tiene la fifo simulada en la salida
 				forever begin
 					@(posedge vif.clk);                                       
 					if(vif.pop[0][dispositivo])begin
@@ -230,11 +229,12 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
 					  	vif.pndng[0][dispositivo] <= 0;
 					end
 				end
-			end// *****************Temina hijo manejos de pop****************************
+			end// *****************Termina hijo manejos de pop****************************
 			
 			
 			
 			begin// +++++++++++++++++++Hijo manejo de push (Monitor)+++++++++++++++++++
+				//Se mantiene siempre revisando si se recibe una transaccion y en caso que se reciba se guarda en la fifo simulada de salida
 				@(posedge vif.clk);
 				forever begin                 
 				  	@(vif.push[0][dispositivo]); //Espera a recibir un push
@@ -247,10 +247,10 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
 			end// +++++++++++++++++++Termina Hijo manejo de push (Monitor)+++++++++++
 			
 			begin//----------------Inicia hijo que maneja el envio al checker-----------------------
+				//Se mantiene siempre revisando si en la fifo de salida se encuentran datos para ir sacandolos y enviandolos al mailbox del checker
 				@(posedge vif.clk);
 				forever begin
-				  	//POP de la fifo de salida para enviarla al mbx checher
-					trans_dut #(.ancho(ancho),.drvrs(drvrs)) trans_recibida=new;
+					trans_dut #(.ancho(ancho),.drvrs(drvrs)) trans_recibida=new();
 				  	@(posedge vif.clk);
 					if(fifo_salida.get_pndg())begin
 					  	temporal = fifo_salida.pop();  //Recibe de la fifo de salida el destino + dato  
@@ -258,25 +258,16 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
 						trans_recibida.dato = temporal[ancho-9:0];
 						trans_recibida.tiempo_recibido = $time;
 						trans_recibida.fuente = dispositivo;
-						trans_recibida.print("Driver: Se coloca transaccion para el checker");
+						trans_recibida.print("		Driver: Se coloca transaccion para el checker");
 				 		drv_chkr_mbx.put(trans_recibida);
 						//$display("transacciones pendientes en mbx driver-checker = %g",drv_chkr_mbx.num()); //muestra todas las instrucciones pendientes en el mbx agnt-driver
 					end
 				end 
-				
-				
+						
 			end//----------Termina hijo que maneja el envio al checker-----------------------
-		
-		
-		
-		
-		join_none
 	
+		join_none	
 	endtask
-	
-	
-	
-	
 endclass 
 	
 

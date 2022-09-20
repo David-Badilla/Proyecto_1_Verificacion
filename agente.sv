@@ -2,14 +2,14 @@
 
 class agente #(parameter ancho=16, parameter drvrs=5);
 	trans_dut_mbx agnt_drv_mbx;  	//mbx agente - driver
-	trans_dut_mbx agente_checker_mbx; 
+	//trans_dut_mbx agente_checker_mbx; 
 
 	instrucciones_agente_mbx test_agent_mbx; //mbx test - agente
 	rand int t;
 	constraint const_t {t inside{[0:drvrs-1]};} //Variable para aleatorizar que destino o que fuente se hace en todos_uno o en uno_todos
 	int num_transacciones;
 	int max_retardo;
-	bit [7:0] broadcast_id; //*****COLOCAR LUEGO COMO PARAMETRO RECIBIDO***
+	bit [7:0] broadcast_id; //***PARAMETRO RECIBIDO***
 	instrucciones_agente instruccion;
 	trans_dut #(.ancho(ancho), .drvrs(drvrs)) transaccion;
 	
@@ -25,14 +25,13 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 	function new;
 		num_transacciones=1;
 		max_retardo=20;
-		broadcast_id = {8{1'b1}};
 	endfunction
 
 	
 	task run;
 		$display("[%g] El Agente fue inicializado",$time);
 		forever begin
-			#3
+			#1
 			if(test_agent_mbx.num() > 0)begin
 				$display("[%g] Agente: se recibe instruccion",$time);
 				test_agent_mbx.get(instruccion);
@@ -47,9 +46,6 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 							transaccion.tipo=generico; // se fuerza a que sea de tipo generico
 							transaccion.print("Agente:transaccion creada");
 							agnt_drv_mbx.put(transaccion);
-							//#transaccion.retardo
-							transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para checker
-							agente_checker_mbx.put(transaccion);
 						end
 						
 					end
@@ -64,8 +60,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 							transaccion.destino=broadcast_id;  //define que sea de tipo broadcast
 							transaccion.print("Agente:transaccion (broadcast) creada");
 							agnt_drv_mbx.put(transaccion);
-							transaccion.tiempo_envio=$time + transaccion.retardo;
-							agente_checker_mbx.put(transaccion);
+							
 						end
 						
 					end
@@ -79,8 +74,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 							transaccion.dato=0;
 							transaccion.print("Agente:transaccion (reset) creada");
 							agnt_drv_mbx.put(transaccion);
-							transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para							
-							agente_checker_mbx.put(transaccion);
+						
 						end
 						
 						
@@ -97,8 +91,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 							end
 							transaccion.print("Agente:transaccion (completa) creada");
 							agnt_drv_mbx.put(transaccion);
-							transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para checker
-							agente_checker_mbx.put(transaccion);	
+							
 						end
 							
 					end
@@ -113,8 +106,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 						transaccion.retardo= ret_spec;
 						transaccion.print("Agente:transaccion (Especifica) creada");
 						agnt_drv_mbx.put(transaccion);	
-						transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para	
-						agente_checker_mbx.put(transaccion);						
+												
 					end		
 					uno_todos:begin
 						this.randomize();
@@ -126,9 +118,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 							transaccion.tipo = uno_todo; // se fuerza a que sea de tipo uno todos
 							transaccion.print("Agente:transaccion creada");
 							agnt_drv_mbx.put(transaccion);
-							//#transaccion.retardo
-							transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para checker
-							agente_checker_mbx.put(transaccion);
+							
 						end
 					end
 					todos_uno: begin
@@ -141,9 +131,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 							transaccion.tipo=todo_uno; // se fuerza a que sea de tipo todos_uno
 							transaccion.print("Agente:transaccion creada");
 							agnt_drv_mbx.put(transaccion);
-							//#transaccion.retardo
-							transaccion.tiempo_envio=$time + transaccion.retardo; //Simulacion del retardo para checker
-							agente_checker_mbx.put(transaccion);
+						
 						end
 					end
 					

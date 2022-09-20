@@ -18,7 +18,7 @@ class test #(parameter ancho=16 , parameter drvrs=5);
 	virtual bus_if #(.drvrs(drvrs) , .pckg_sz(ancho)) _if;
 	
 	// Definicion de las condiciones iniciales del test 
-	function new;
+	function new();
 		//Iniciando mailboxes
 		test_agnt_mbx	= new();
 		test_sb_mbx		= new();

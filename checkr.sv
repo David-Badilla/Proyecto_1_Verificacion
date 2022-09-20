@@ -8,7 +8,7 @@ class checkr #(parameter drvrs = 5, parameter ancho = 16);
 
 	trans_dut_mbx drv_chkr_mbx; //puntero del mailboxer no inicializado aun
     trans_sb_mbx chkr_sb_mbx; //puntero del mail boxer no inicializado aun
-	trans_dut_mbx agente_checker_mbx;
+	trans_dut_mbx Simulado_driver_checker_mbx;
     int cont;
     bit listo=0;
     function new();
@@ -85,7 +85,7 @@ class checkr #(parameter drvrs = 5, parameter ancho = 16);
 									to_sb.calc_latencia();
 									to_sb.completado=1;
 				                    
-				                    to_sb.print("Checker: Transaccion completada **ENVIADA AL SCOREBOARD**");
+				                    to_sb.print(" Checker: Transaccion completada **ENVIADA AL SCOREBOARD**");
 				                    chkr_sb_mbx.put(to_sb); //para poner en mailbox la info de to_sb
 								end
 
@@ -100,7 +100,7 @@ class checkr #(parameter drvrs = 5, parameter ancho = 16);
 					todos_uno:begin
 						if(emul_dut.size()>0)begin
 							//dut_emulado = emul_dut.pop_back();
-							listo=0;//variable constrol para ver si se encuentra en la cola o no
+							listo=0;//variable control para ver si se encuentra en la cola o no
 							for (int i=0;i<emul_dut.size();i++) begin
 				                if (transaccion.dato  == emul_dut[i].dato && transaccion.destino==emul_dut[i].destino)begin
 									listo=1;//indica que ya se encontro la transaccion
@@ -132,7 +132,7 @@ class checkr #(parameter drvrs = 5, parameter ancho = 16);
 					reset:begin
 						if(emul_dut.size()>0)begin
 							//dut_emulado = emul_dut.pop_back();
-							listo=0;//variable constrol para ver si se encuentra en la cola o no
+							listo=0;//variable control para ver si se encuentra en la cola o no
 							for (int i=0;i<emul_dut.size();i++) begin
 				                if (transaccion.dato  == emul_dut[i].dato && transaccion.destino==emul_dut[i].destino)begin
 									listo=1;//indica que ya se encontro la transaccion
@@ -167,9 +167,9 @@ class checkr #(parameter drvrs = 5, parameter ancho = 16);
 		end
 	begin
 		forever begin
-			agente_checker_mbx.get(transaccionemul);
-			transaccionemul.print("Check - agente Recibido");
-			emul_dut.push_back(transaccionemul);
+			Simulado_driver_checker_mbx.get(transaccionemul);
+			transaccionemul.print("Check - driver transaccion simulada Recibida");
+			emul_dut.push_back(transaccionemul); //Coloca la instruccion recibida del agente para luego analizar si se recibió como se debe
 		end
 	end
 	join_none

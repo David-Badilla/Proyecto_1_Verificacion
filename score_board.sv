@@ -38,7 +38,7 @@ class score_board #(parameter ancho = 16,parameter drvrs=5);
 							$display("\nScore board: Recibida orden retardo promedio");
 							for(int i=0;i<drvrs;i++	)begin				
 								retardo_promedio[i]=retardo_total[i] / trans_completas[i];
-								$display("[%g] Score board: El retardo promedio en dispositivo[%g] es: %0.3f",$time,i,retardo_promedio[i]);	
+								$display("[%g] Score board: El retardo promedio en dispositivo[%g] es: %g nS",$time,i,retardo_promedio[i]);	
 							end
 						end
 
@@ -66,7 +66,7 @@ class score_board #(parameter ancho = 16,parameter drvrs=5);
 								end							
 							end
 							bw=ancho/(min_latencia*(0.00000001));//Escalado al ser en nanosegundos
-							$display(" \n El ancho de banda minimo del bus es: %g bits/segundo \n",bw);
+							$display(" \n El ancho de banda minimo del bus es: %d bits/segundo \n",bw);
 
 						end						
 

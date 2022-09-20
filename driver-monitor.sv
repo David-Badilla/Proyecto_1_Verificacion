@@ -3,12 +3,10 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
 	trans_dut_mbx agnt_drv_mbx;
 	trans_dut_mbx drv_chkr_mbx;
-
+	trans_dut_mbx Simulado_driver_checker_mbx;
   //Variables para FIFO
 	trans_dut_mbx drv_fifos_mbx[drvrs-1:0]; //Mailboxes para pasar datos a los procesos hijos
-    fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) drv_interfaz_fifo [drvrs-1:0]; //Se instancia la clase de fifo
-	//fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) fifo_salida[drvrs-1:0]; // FIFO de recepcion 
-	task run();
+    task run();
         
         $display("[%g] El driver fue inicializado",$time);
     	@(posedge vif.clk);
@@ -21,7 +19,7 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo
         //Inicializacion de mailboxes a las interfaces
 		for (int i = 0; i < drvrs; i++) begin 
 		  drv_fifos_mbx[i] = new();		
-			drv_interfaz_fifo[i]=new;
+			
 		end
 		
 		fork
@@ -46,14 +44,13 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo
 				@(posedge vif.clk);
 				fork 		    	
 					for (int j = 0; j < drvrs; j++) begin		
-		     			begin
-							
+		     			begin 
 		     				interfaz_dispositivo #(.ancho(ancho),.drvrs(drvrs)) interfaz=new; //Clase ubicada en "paquetes.sv" Linea 175
 							interfaz.dispositivo=j;
 		     				interfaz.drv_fifos_mbx=drv_fifos_mbx[j]; 
-		     				interfaz.drv_interfaz_fifo=drv_interfaz_fifo[j];
 		     				interfaz.vif=vif;
 							interfaz.drv_chkr_mbx=drv_chkr_mbx;
+							interfaz.Simulado_driver_checker_mbx=Simulado_driver_checker_mbx;
 							interfaz.run();
 		     			end
 		    	   end //end del for que genera todos los dispositivos
