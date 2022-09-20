@@ -6,7 +6,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 
 	instrucciones_agente_mbx test_agent_mbx; //mbx test - agente
 	rand int t;
-	constraint const_t {t inside{[0:drvrs-1]};} //Variable para aleatorizar 
+	constraint const_t {t inside{[0:drvrs-1]};} //Variable para aleatorizar que destino o que fuente se hace en todos_uno o en uno_todos
 	int num_transacciones;
 	int max_retardo;
 	bit [7:0] broadcast_id; //*****COLOCAR LUEGO COMO PARAMETRO RECIBIDO***
@@ -32,7 +32,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 	task run;
 		$display("[%g] El Agente fue inicializado",$time);
 		forever begin
-			#2
+			#3
 			if(test_agent_mbx.num() > 0)begin
 				$display("[%g] Agente: se recibe instruccion",$time);
 				test_agent_mbx.get(instruccion);

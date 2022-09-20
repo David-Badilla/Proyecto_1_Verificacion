@@ -138,14 +138,14 @@ class fifo #(parameter pile_size = 5, parameter pckg_sz = 32);
 		this.pndg = 0;
 		this.fifo_full = 0;
 	endfunction
-  	function void push(bit [pckg_sz-1:0] mensaje, string tag = ""); //funcion para el push
+  	function void push(bit [pckg_sz-1:0] mensaje); //funcion para el push
       	if (pile.size() == pile_size) begin
 			this.fifo_full = 1;
 		end		
       	pile.push_front(mensaje);
 		this.pndg = 1;
 	endfunction
-  	function bit[pckg_sz-1:0] pop(string tag = ""); //pop
+  	function bit[pckg_sz-1:0] pop(); //pop
 		if(pile.size() > 0) begin
 			if(pile.size() == 1) begin			
           		this.pndg = 0; 		
@@ -172,34 +172,29 @@ endclass
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-class interfaz_dispositivo #(parameter dispositivo = 0, parameter ancho=16;parameter drvrs=4);
+class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Profundidad_fifo =10000000);
 	virtual bus_if #(.drvrs(drvrs),.pckg_sz(ancho)) vif;
-	parameter Profundidad_fifo =100000;
 	trans_dut_mbx drv_fifos_mbx;
-	fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) drv_interfaz_fifo:
+	trans_dut_mbx drv_chkr_mbx;
+	fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) drv_interfaz_fifo;
 	fifo #(.pile_size(Profundidad_fifo), .pckg_sz(ancho)) fifo_salida;
-	
-	
+	bit [ancho-1:0] paquete;
+	bit [ancho-1:0] temporal;
+	int delay;
+	int dispositivo;
+
 	task run();
+		fifo_salida=new;
+		$display("	dispositivo creado[%g]",dispositivo);
 		fork
 			begin//-------------------Inicia hijo para manejo de retardo------------------
 				@(posedge vif.clk);
                 forever begin
-                	trans_dut #(.ancho(ancho),.drvrs(drvrs)) transaccion;
-                    int delay = 0;  
+                	trans_dut #(.ancho(ancho),.drvrs(drvrs)) transaccion =new;
+                    delay = 0;  
                     @(posedge vif.clk);
                     drv_fifos_mbx.get(transaccion); //Saca la transaccion actual del mbx                          
-					bit [anchi-1:0] paquete;
+					
 					paquete[ancho-1:ancho-8] = transaccion.destino;
                     paquete[ancho-9:0] = transaccion.dato;
                   
@@ -229,7 +224,7 @@ class interfaz_dispositivo #(parameter dispositivo = 0, parameter ancho=16;param
 					  	vif.D_pop[0][dispositivo] <= drv_interfaz_fifo.pile[$]; 
 					end
 					//manejo de bandera de pndng
-					if(drv_interfaz_fifo[dispositivo].get_pndg() == 1) begin
+					if(drv_interfaz_fifo.get_pndg() == 1) begin
 					  	vif.pndng[0][dispositivo] <= 1;
 					end else begin
 					  	vif.pndng[0][dispositivo] <= 0;
@@ -243,6 +238,7 @@ class interfaz_dispositivo #(parameter dispositivo = 0, parameter ancho=16;param
 				@(posedge vif.clk);
 				forever begin                 
 				  	@(vif.push[0][dispositivo]); //Espera a recibir un push
+					//$display("		Push=1");
 				  	//PUSH a la fifo del dato recibido del dut
 					  	fifo_salida.push(vif.D_push[0][dispositivo]);
 						@(posedge vif.clk);
@@ -254,12 +250,12 @@ class interfaz_dispositivo #(parameter dispositivo = 0, parameter ancho=16;param
 				@(posedge vif.clk);
 				forever begin
 				  	//POP de la fifo de salida para enviarla al mbx checher
-					trans_dut #(.ancho(ancho),.drvrs(drvrs)) trans_recibida;
+					trans_dut #(.ancho(ancho),.drvrs(drvrs)) trans_recibida=new;
 				  	@(posedge vif.clk);
 					if(fifo_salida.get_pndg())begin
 					  	temporal = fifo_salida.pop();  //Recibe de la fifo de salida el destino + dato  
-						trans_recibida.destino=temporal[dispositivo][ancho-1:ancho-8];
-						trans_recibida.dato = temporal[dispositivo][ancho-9:0];
+						trans_recibida.destino=temporal[ancho-1:ancho-8];
+						trans_recibida.dato = temporal[ancho-9:0];
 						trans_recibida.tiempo_recibido = $time;
 						trans_recibida.fuente = dispositivo;
 						trans_recibida.print("Driver: Se coloca transaccion para el checker");

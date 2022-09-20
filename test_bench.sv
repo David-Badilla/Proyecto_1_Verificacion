@@ -1,7 +1,9 @@
 `timescale 1ns/1ps
+
+`include "interfase.sv"
 `include "paquetes.sv"
 `include "Library.sv"
-`include "interfase.sv"
+
 `include "score_board.sv"
 `include "checkr.sv"	//HAY QUE ACOMODARLOS DONDE NO HAYA ERROR EN ORDEN
 `include "driver-monitor.sv"
@@ -19,16 +21,16 @@ module test_bench;
 	//Parametros editables desde aca mas facil
 	parameter ancho = 16;
 	parameter drvrs =  5;
-	parameter broadcast_indi = {8{1'b1}};
-	int numero_instrucciones=10; //En general se utiliza esta para todos menos broadcast
+	parameter [7:0] broadcast_indi = {8{1'b1}};
+	int numero_instrucciones=5; //En general se utiliza esta para todos menos broadcast
 	int max_retardo=20;
-	instrucciones_agente instr_agente = Completo; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica, uno_todos,todos_uno
-	solicitud_sb instr_sb = retraso_promedio;//retraso_promedio, bwmax, bwmin, reporte_completo;
+	instrucciones_agente instr_agente = genericos; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica, uno_todos,todos_uno
+	solicitud_sb instr_sb = bwmin;//retraso_promedio, bwmax, bwmin, reporte_completo;
 	
 	
 	
 	//******************HACER CAMBIOS PARA PRUEBAS AQUÍ *********************************
-	int Prueba=1;
+	int Prueba=0; //Prueba 0 deja pasar los datos por defecto de arriba
 
 	//Variables para transaccion especifica
 
@@ -36,9 +38,9 @@ module test_bench;
 
 
 	tipo_trans tpo_spec = generico;	//generico, broadcast, reset,uno_todo,todo_uno
-	bit [7:0] fte_spec = 1;
-	bit [7:0] dest_spec=2;
-	bit [ancho-9:0] dato_spec=8;
+	logic [7:0] fte_spec = 1;
+	logic [7:0] dest_spec=2;
+	logic [ancho-9:0] dato_spec=8;
 	int ret_spec = 25;
 	//***********************************************************************************
 

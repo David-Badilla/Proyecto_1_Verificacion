@@ -48,7 +48,7 @@ class test #(parameter ancho=16 , parameter drvrs=5);
 			ambiente_instancia.run();
 		join_none
 		
-		case(instr_agente)
+		case(instr_agente) //Case para tener más controlado que tipo de instruccion se va a realizar
 			genericos:begin
 				test_agnt_mbx.put(instr_agente);
 				$display("[%g] Test: Enviada la primera instruccion (genericos)",$time);

@@ -17,6 +17,7 @@ class checkr #(parameter drvrs = 5, parameter ancho = 16);
     endfunction
     
     task run;
+		#1
         $display("[%g] El checker fue inicializado",$time);
         to_sb = new();
 		dut_emulado=new();

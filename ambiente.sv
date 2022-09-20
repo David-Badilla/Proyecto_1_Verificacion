@@ -12,10 +12,10 @@ class ambiente #(parameter ancho=16 , parameter drvrs=5);
 	//-----------Declaracion de los mailboxes-----------------------------
 	trans_dut_mbx  agnt_drv_mbx;				//Mailbox del agente al driver
 	trans_dut_mbx  drv_chkr_mbx;				//Mailbox del driver al checker
-	trans_sb_mbx  chkr_sb_mbx;				//Mailbox del checker al scoreboard
-	instrucciones_agente_mbx test_agnt_mbx;	//Mailbox del test al agente
-	solicitud_sb_mbx test_sb_mbx;			//Mailbox del test al scoreboard
-	trans_dut_mbx agente_checker_mbx;
+	trans_sb_mbx  chkr_sb_mbx;					//Mailbox del checker al scoreboard
+	instrucciones_agente_mbx test_agnt_mbx;		//Mailbox del test al agente
+	solicitud_sb_mbx test_sb_mbx;				//Mailbox del test al scoreboard
+	trans_dut_mbx agente_checker_mbx;			//Mailbox del agente al checker
 
 	function new();
 		//-----------Inicializando los mailboxes-----------

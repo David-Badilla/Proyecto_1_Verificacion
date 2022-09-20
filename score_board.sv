@@ -10,17 +10,11 @@ class score_board #(parameter ancho = 16,parameter drvrs=5);
     int tamano_sb;
     int trans_completas[drvrs-1:0];
     int retardo_total[drvrs-1:0];   // analizar lo de los paquetes.
-    int max_t_recibido;
-
-
-	int bwm[drvrs-1:0][$];
-	int temp[drvrs-1:0];
-	int t_recibido;
-	int relojini;
-	int relojfin;
+    int max_latencia;
+	int min_latencia;
 	integer f,i;
 	int max;
-
+	int bw;
     task run;
         $display("(%g) El ScoreBoard fue inicializado",$time);
         forever begin
@@ -41,7 +35,7 @@ class score_board #(parameter ancho = 16,parameter drvrs=5);
 					case (orden)
 						retraso_promedio:begin
 							//Retraso promedio en la entrega de paquetes x terminal y general en función de la cantidad de dispositivos y las profundidad de las FIFOs.
-							$display("Score board: Recibida orden retardo promedio");
+							$display("\nScore board: Recibida orden retardo promedio");
 							for(int i=0;i<drvrs;i++	)begin				
 								retardo_promedio[i]=retardo_total[i] / trans_completas[i];
 								$display("[%g] Score board: El retardo promedio en dispositivo[%g] es: %0.3f",$time,i,retardo_promedio[i]);	
@@ -50,60 +44,35 @@ class score_board #(parameter ancho = 16,parameter drvrs=5);
 
 
 						bwmax:begin
-							relojini=0;
+							$display("\nScore board: Recibida orden Ancho de banda maximo");
+						
 							tamano_sb=this.scoreboard.size();
-							max_t_recibido=0;
-							for(int u=0;u<drvrs;u++) temp[u]=0; //reinicio de variable temporal
+							max_latencia=0;
 							for(int m=0;m<tamano_sb;m++)begin
-								if (scoreboard[m].tiempo_recibido>max_t_recibido)begin								
-									max_t_recibido=scoreboard[m].tiempo_recibido;
+								if (scoreboard[m].latencia>max_latencia)begin							
+									max_latencia=scoreboard[m].latencia;
 								end
 							end
-							$display("		T_max de envio: %g",max_t_recibido);
-							for (int i=0;i<=max_t_recibido;i++)begin
-								relojfin=relojini+10;	//Crea una ventana de 10 con respecto al reloj inicial para comparar						$
-								for(int j=0; j<tamano_sb;j++)begin // recorre toda la cola que almacena los paquetes que fueron ejecutados
-									t_recibido=scoreboard[j].tiempo_recibido;
-									
-									if(t_recibido>=relojini && t_recibido<=relojfin )begin //Revisa si el tiempo recibido se encuentra en esa ventana de ciclo de reloj
-										temp[scoreboard[j].Fuente]=temp[scoreboard[j].Fuente]+1;//suma una constante dependiendo de cual fue su fuente		
-										$display("T_ini: %g , T fin: %g",relojini,relojfin);
-										//$display("			Temp[%g] = %g",j,temp[scoreboard[j].Fuente]);
-									end	
-								end
-								for(int n=0;n<drvrs;n++) begin //Recorre todos los dispositivos
-									if(temp[n]!=0) begin
-										bwm[n].push_back(temp[n]); //Guarda los tiempos totales de cada ciclo 
-										$display(  "Pushed disp[%g]: %g",n, temp[n]);
-									end
-								end
-								for(int u=0;u<drvrs;u++) temp[u]=0;
-								relojini=relojfin; //Se reinician las variables para simular el siguiente ciclo de reloj
-							end
-
-							for(int n=0;n<drvrs;n++) begin //una vez terminados todos los ciclos se busca cual fue el mayor						
-								max=0;
-								for(int m=0;m<bwm[n].size();m++) begin
-										if(bwm[n][m]>max) max=bwm[n][m]; 
-								end
-								$display("BWmax del dispositivo [%g] es: %g por ciclo de reloj",n,max);
-														
-							end	
-									
-							for(int m=0;m<tamano_sb;m++)begin
-								if (scoreboard[m].tiempo_recibido>max_t_recibido)begin								
-									max_t_recibido=scoreboard[m].tiempo_recibido;
-								end
-							end
-							
+							bw=ancho/(max_latencia*(0.00000001));
+							$display(" \n El ancho de banda maximo del bus es: %g bits/segundo \n",bw);
 						end
 						bwmin:begin
+							$display("Score board: Recibida orden Ancho de banda minimo");
+							tamano_sb=this.scoreboard.size();
+							min_latencia=9999999999999999;
+							for(int m=0;m<tamano_sb;m++)begin
+								if (scoreboard[m].latencia<min_latencia)begin							
+									min_latencia=scoreboard[m].latencia;
+								end							
+							end
+							bw=ancho/(min_latencia*(0.00000001));//Escalado al ser en nanosegundos
+							$display(" \n El ancho de banda minimo del bus es: %g bits/segundo \n",bw);
 
 						end						
 
 
 						reporte_completo:begin //Debe ser capaz de entregar un reporte de los paquetes enviados recibidos en formato csv. Se debe incluir tiempo de envío terminal de procedencia, terminal de destino tiempo de recibido, retraso en el envío.
-							$display("Score board: Recibida orden Reporte completo");
+							$display("\nScore board: Recibida orden Reporte completo");
 							tamano_sb=this.scoreboard.size();
 							f = $fopen("output.csv", "w");
 							$fwrite(f, "T_envio  , Fuente,  Procedencia, Destino ,T_recibido, retraso, dato \n");
