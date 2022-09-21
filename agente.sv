@@ -2,7 +2,7 @@
 
 class agente #(parameter ancho=16, parameter drvrs=5);
 	trans_dut_mbx agnt_drv_mbx;  	//mbx agente - driver
-	//trans_dut_mbx agente_checker_mbx; 
+ 
 
 	instrucciones_agente_mbx test_agent_mbx; //mbx test - agente
 	rand int t;
@@ -11,7 +11,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 	int max_retardo;
 	bit [7:0] broadcast_id; //***PARAMETRO RECIBIDO***
 	instrucciones_agente instruccion;
-	trans_dut #(.ancho(ancho), .drvrs(drvrs)) transaccion;
+	trans_dut #(.ancho(ancho)) transaccion;
 	
 	//Variables especificas para trans_especifica
 	tipo_trans tpo_spec;
@@ -41,6 +41,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 					genericos: begin //aleatorio comun
 						for (int i=0;i < num_transacciones;i++)begin
 							transaccion=new();
+							transaccion.drvrs=drvrs;
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.tipo=generico; // se fuerza a que sea de tipo generico
@@ -54,6 +55,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 					broadcast_inst: begin  // Enviar packetes exclusivos de broadcast
 						for (int i=0;i <num_transacciones;i++)begin  //LIMITAR A 10 LO DIJO EL PROFE
 							transaccion=new();
+							transaccion.drvrs=drvrs;
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.tipo=broadcast;
@@ -68,6 +70,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 					Rst_aleatorio: begin
 						for (int i=0;i < num_transacciones;i++)begin
 							transaccion=new();
+							transaccion.drvrs=drvrs;
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.tipo=reset;// se fuerza a que sea de tipo reset
@@ -84,6 +87,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 					Completo: begin
 						for (int i=0;i < num_transacciones;i++)begin
 							transaccion=new();
+							transaccion.drvrs=drvrs;
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize(); // aqui mismo de aleatoriza si es generico , broadcast o reset
 							if(transaccion.tipo==broadcast) begin 
@@ -98,6 +102,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 					
 					trans_especifica: begin
 						transaccion=new();
+						transaccion.drvrs=drvrs;
 						transaccion.tipo=tpo_spec;
 						transaccion.fuente= fte_spec;
 						transaccion.destino= dest_spec;
@@ -112,6 +117,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 						this.randomize();
 						for (int i=0;i < num_transacciones;i++)begin
 							transaccion=new();
+							transaccion.drvrs=drvrs;
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.fuente=t;
@@ -125,6 +131,7 @@ class agente #(parameter ancho=16, parameter drvrs=5);
 						this.randomize();
 						for (int i=0;i < num_transacciones;i++)begin
 							transaccion=new();
+							transaccion.drvrs=drvrs;
 							transaccion.max_retardo=max_retardo;
 							transaccion.randomize();
 							transaccion.destino=t;

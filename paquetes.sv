@@ -6,7 +6,7 @@ typedef enum {generico, broadcast, reset,uno_todo,todo_uno} tipo_trans;
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Paquete TransDUT (pck1) Agente/generador ---> Driver/Monitor y Diver/Monitor ---> Checker
 ///////////////////////////////////////////////////////////////////////////////////////////
-class trans_dut #(parameter ancho=16, parameter drvrs=5);
+class trans_dut #(parameter ancho=16);
 	rand tipo_trans tipo;
 	rand bit [ancho-9:0] dato; //-9 para los 8 bits que hay que concatenar de direccion
 	rand bit [7:0] fuente;
@@ -15,6 +15,7 @@ class trans_dut #(parameter ancho=16, parameter drvrs=5);
 	int tiempo_envio;
 	int tiempo_recibido;
 	int max_retardo;	//Retardo maximo de 20
+	int drvrs;
 	
 	constraint const_retardo {retardo<max_retardo; retardo>0;}
 	constraint const_destino {destino != fuente;destino inside{[0:drvrs-1]}; }/*destino<drvrs; destino>=0;}*/ 			 // Restriccion del destino 
@@ -29,6 +30,7 @@ class trans_dut #(parameter ancho=16, parameter drvrs=5);
 		this.tiempo_envio = t_envio;
 		this.tiempo_recibido = t_recibido;
 		this.max_retardo = max_ret;		
+	
 	endfunction
 	
 	function void print(string tag ="");
@@ -185,7 +187,8 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
 				//Revisa el mailbox a ver si recibió una transaccion y la coloca en la fifo de entrada luego de haber simulado los ciclos de retardo correspondientes 
 				//@(posedge vif.clk);
                 forever begin
-                	trans_dut #(.ancho(ancho),.drvrs(drvrs)) transaccion =new();
+                	trans_dut #(.ancho(ancho)) transaccion =new();
+					transaccion.drvrs=drvrs;
                     delay = 0;  
                     @(posedge vif.clk);
                     drv_fifos_mbx.get(transaccion); //Saca la transaccion actual del mbx                          
@@ -250,7 +253,8 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
 				//Se mantiene siempre revisando si en la fifo de salida se encuentran datos para ir sacandolos y enviandolos al mailbox del checker
 				@(posedge vif.clk);
 				forever begin
-					trans_dut #(.ancho(ancho),.drvrs(drvrs)) trans_recibida=new();
+					trans_dut #(.ancho(ancho)) trans_recibida=new();
+					trans_recibida.drvrs=drvrs;
 				  	@(posedge vif.clk);
 					if(fifo_salida.get_pndg())begin
 					  	temporal = fifo_salida.pop();  //Recibe de la fifo de salida el destino + dato  

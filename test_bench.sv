@@ -20,7 +20,7 @@ module test_bench;
 
 	//Parametros editables desde aca mas facil
 	parameter ancho = 16;
-	parameter drvrs =  5;
+	parameter drvrs =  8;
 	parameter [7:0] broadcast_indi = {8{1'b1}};
 	int numero_instrucciones=10; //En general se utiliza esta para todos menos broadcast
 	int max_retardo=20;
