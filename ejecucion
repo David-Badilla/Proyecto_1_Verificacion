@@ -4,32 +4,33 @@
 #la instruccion "source ejecucion" y se correrá todo lo necesario para compilar el proyecto y generar las pruebas-
 #respectivas.
 
+source /mnt/vol_NFS_rh003/estudiantes/archivos_config/synopsys_tools.sh
 
-vcs -Mupdate test_bench.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
+vcs -Mupdate test_bench.sv -o salida_genericos -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=3
+./salida_genericos +ntb_random_seed=3
 
-vcs -Mupdate test_bench2.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
+vcs -Mupdate test_bench2.sv -o salida_broadcast -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=4
+./salida_broadcast +ntb_random_seed=4
 
-vcs -Mupdate test_bench3.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
+vcs -Mupdate test_bench3.sv -o salida_reset -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=8
+./salida_reset +ntb_random_seed=8
 
-vcs -Mupdate test_bench4.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
+vcs -Mupdate test_bench4.sv -o salida_completo -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=7
+./salida_completo +ntb_random_seed=7
 
-vcs -Mupdate test_bench5.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
+vcs -Mupdate test_bench5.sv -o salida_especifica -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=1
+./salida_especifica +ntb_random_seed=1
 
-vcs -Mupdate test_bench6.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
+vcs -Mupdate test_bench6.sv -o salida_uno_todos -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=9
+./salida_uno_todos +ntb_random_seed=9
 
-vcs -Mupdate test_bench7.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
+vcs -Mupdate test_bench7.sv -o salida_todos_uno -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=6
+./salida_todos_uno +ntb_random_seed=6
 

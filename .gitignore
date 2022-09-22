@@ -15,4 +15,18 @@ inter.fsdb
 novas_dump.log
 novas.conf
 novas.rc
+salida_broadcast
+salida_broadcast.daidir/
+salida_completo
+salida_completo.daidir/
+salida_especifica
+salida_especifica.daidir/
+salida_genericos
+salida_genericos.daidir/
+salida_reset
+salida_reset.daidir/
+salida_todos_uno
+salida_todos_uno.daidir/
+salida_uno_todos
+salida_uno_todos.daidir/
 
