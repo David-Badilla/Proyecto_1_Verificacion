@@ -1,8 +1,0 @@
-source /mnt/vol_NFS_rh003/estudiantes/archivos_config/synopsys_tools.sh
-
-
-vcs -Mupdate test_bench.sv  -o salida  -full64 -sverilog  -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
-
-
-./salida +ntb_random_seed=7
-
