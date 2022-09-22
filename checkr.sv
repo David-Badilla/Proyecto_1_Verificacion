@@ -1,9 +1,9 @@
 class checkr #(parameter drvrs = 5, parameter ancho = 16);
-    trans_dut #(.ancho(ancho)) transaccion;
-	trans_dut #(.ancho(ancho)) transaccionemul;
-    trans_dut #(.ancho(ancho)) dut_emulado; //para enviar paquetes de la transaccion emulada que debe hacer el checker del dut
-    trans_sb #(.ancho(ancho)) to_sb;
-    trans_dut #(.ancho(ancho)) emul_dut[$];
+    trans_dut transaccion;
+	trans_dut transaccionemul;
+    trans_dut dut_emulado; //para enviar paquetes de la transaccion emulada que debe hacer el checker del dut
+    trans_sb to_sb;
+    trans_dut emul_dut[$];
     
 
 	trans_dut_mbx drv_chkr_mbx; //puntero del mailboxer no inicializado aun

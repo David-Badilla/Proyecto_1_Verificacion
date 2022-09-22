@@ -1,10 +1,10 @@
 class score_board #(parameter ancho = 16,parameter drvrs=5);
     trans_sb_mbx chkr_sb_mbx;
     solicitud_sb_mbx test_sb_mbx;
-    trans_sb #(.ancho(ancho)) trans_entrante;
-    trans_sb #(.ancho(ancho)) scoreboard[$]; //array para controlar el scoreboard
-    trans_sb #(.ancho(ancho)) scoreboard_aux[$];
-    trans_sb #(.ancho(ancho)) aux_trans;
+    trans_sb trans_entrante;
+    trans_sb scoreboard[$]; //array para controlar el scoreboard
+    trans_sb scoreboard_aux[$];
+    trans_sb aux_trans;
     shortreal retardo_promedio[drvrs-1:0];    // Esto hay que analizar los paquetes.
     solicitud_sb orden;
     int tamano_sb;

@@ -19,13 +19,13 @@ module test_bench;
 	reg clk;
 
 	//Parametros editables desde aca mas facil
-	parameter ancho = 16;
+	parameter ancho = 30;
 	parameter drvrs =  8;
 	parameter [7:0] broadcast_indi = {8{1'b1}};
-	int numero_instrucciones=10; //En general se utiliza esta para todos menos broadcast
+	int numero_instrucciones=30; //En general se utiliza esta para todos menos broadcast
 	int max_retardo=20;
 	instrucciones_agente instr_agente = Rst_aleatorio; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica, uno_todos,todos_uno
-	solicitud_sb instr_sb = bwmin;//retraso_promedio, bwmax, bwmin, reporte_completo;
+	solicitud_sb instr_sb = reporte_completo;//retraso_promedio, bwmax, bwmin, reporte_completo;
 	
 	
 	

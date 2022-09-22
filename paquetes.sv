@@ -6,22 +6,24 @@ typedef enum {generico, broadcast, reset,uno_todo,todo_uno} tipo_trans;
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Paquete TransDUT (pck1) Agente/generador ---> Driver/Monitor y Diver/Monitor ---> Checker
 ///////////////////////////////////////////////////////////////////////////////////////////
-class trans_dut #(parameter ancho=16);
+class trans_dut ;
+	int drvrs;
+	int ancho;
 	rand tipo_trans tipo;
-	rand bit [ancho-9:0] dato; //-9 para los 8 bits que hay que concatenar de direccion
+	rand bit [64:0] dato; //-9 para los 8 bits que hay que concatenar de direccion
 	rand bit [7:0] fuente;
 	rand bit [7:0] destino;
 	rand int retardo;
 	int tiempo_envio;
 	int tiempo_recibido;
 	int max_retardo;	//Retardo maximo de 20
-	int drvrs;
-	
+
+	constraint cons_dato{dato<163;}
 	constraint const_retardo {retardo<max_retardo; retardo>0;}
 	constraint const_destino {destino != fuente;destino inside{[0:drvrs-1]}; }/*destino<drvrs; destino>=0;}*/ 			 // Restriccion del destino 
 	constraint const_fuente {fuente inside{[0:drvrs-1]};} //la fuente debe existir 
 
-	function new (tipo_trans tpo = generico, bit [ancho-9:0] dto =0 , bit [7:0] fte = 0 , bit [7:0] dstn=1, int ret=0, int t_envio=0,int t_recibido=0 , int max_ret=20);
+	function new (tipo_trans tpo = generico, bit dto =0 , bit [7:0] fte = 0 , bit [7:0] dstn=1, int ret=0, int t_envio=0,int t_recibido=0 , int max_ret=20);
 		this.tipo = tpo;
 		this.dato = dto; 
 		this.fuente = fte;
@@ -41,9 +43,9 @@ endclass
 /////////////////////////////////////////////////////////////////////
 // Definicion del paquete Trans_sb Checker--> ScoreBoard 
 /////////////////////////////////////////////////////////////////////
-class trans_sb #(parameter ancho = 16, parameter drvrs = 4);
+class trans_sb;
 	tipo_trans tipo;
-	bit [ancho-9:0] dato_enviado;
+	bit [64:0] dato_enviado;
 	bit [7:0] Fuente;
 	bit [7:0] Destino;
 	int tiempo_envio;
@@ -187,7 +189,8 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
 				//Revisa el mailbox a ver si recibió una transaccion y la coloca en la fifo de entrada luego de haber simulado los ciclos de retardo correspondientes 
 				//@(posedge vif.clk);
                 forever begin
-                	trans_dut #(.ancho(ancho)) transaccion =new();
+                	trans_dut transaccion =new();
+					transaccion.ancho=ancho;
 					transaccion.drvrs=drvrs;
                     delay = 0;  
                     @(posedge vif.clk);
@@ -253,7 +256,8 @@ class interfaz_dispositivo #( parameter ancho=16,parameter drvrs=4,parameter Pro
 				//Se mantiene siempre revisando si en la fifo de salida se encuentran datos para ir sacandolos y enviandolos al mailbox del checker
 				@(posedge vif.clk);
 				forever begin
-					trans_dut #(.ancho(ancho)) trans_recibida=new();
+					trans_dut trans_recibida=new();
+					trans_recibida.ancho=ancho;
 					trans_recibida.drvrs=drvrs;
 				  	@(posedge vif.clk);
 					if(fifo_salida.get_pndg())begin

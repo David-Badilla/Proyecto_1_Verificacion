@@ -28,8 +28,9 @@ class driver #(parameter drvrs=4, parameter ancho=16, parameter Profundidad_fifo
 				@(posedge vif.clk);
 				forever begin
 
-					trans_dut #(.ancho(ancho)) recibido;
+					trans_dut recibido;
 					//recibido.drvrs=drvrs;
+					//recibido.ancho=ancho;
 	               // $display("[%g] El Driver espera una transaccion",$time);
 	      
 					//Espera a recibir un mensaje del agente
