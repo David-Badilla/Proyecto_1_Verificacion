@@ -11,25 +11,25 @@ vcs -Mupdate test_bench.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all 
 
 vcs -Mupdate test_bench2.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=3
+./salida +ntb_random_seed=4
 
 vcs -Mupdate test_bench3.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=3
+./salida +ntb_random_seed=8
 
 vcs -Mupdate test_bench4.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=3
+./salida +ntb_random_seed=7
 
 vcs -Mupdate test_bench5.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=3
+./salida +ntb_random_seed=1
 
 vcs -Mupdate test_bench6.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=3
+./salida +ntb_random_seed=9
 
 vcs -Mupdate test_bench7.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
 
-./salida +ntb_random_seed=3
+./salida +ntb_random_seed=6
 
