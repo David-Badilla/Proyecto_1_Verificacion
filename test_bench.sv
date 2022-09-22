@@ -19,7 +19,7 @@ module test_bench;
 	reg clk;
 
 	//Parametros editables desde aca mas facil
-	parameter ancho = 30;
+	parameter ancho = 20;
 	parameter drvrs =  8;
 	parameter [7:0] broadcast_indi = {8{1'b1}};
 	int numero_instrucciones=30; //En general se utiliza esta para todos menos broadcast
@@ -30,7 +30,7 @@ module test_bench;
 	
 	
 	//******************HACER CAMBIOS PARA PRUEBAS AQUÍ *********************************
-	int Prueba=1; //Prueba 0 deja pasar los datos por defecto de arriba
+	//int Prueba; //Prueba 0 deja pasar los datos por defecto de arriba
 
 	//Variables para transaccion especifica
 
@@ -60,57 +60,57 @@ module test_bench;
 		             .D_pop(_if.D_pop),
 		             .D_push(_if.D_push) );
 		             
-		               
-	initial begin 
-		clk=0;
-		t0=new();
+	for (genvar Prueba = 1; Prueba <= 7; Prueba++) begin	               
+		initial begin
+			clk=0;
+			t0=new();
 
 
-		case(Prueba)
-			1:begin instr_agente = genericos; instr_sb = retraso_promedio; end
-			2:begin numero_instrucciones = 5; instr_agente =broadcast_inst ; instr_sb = bwmax; end
-			3:begin instr_agente = Rst_aleatorio; instr_sb =retraso_promedio ; end
-			4:begin instr_agente = Completo; instr_sb = retraso_promedio; end
-			5:begin instr_agente = trans_especifica; instr_sb = reporte_completo ; end
-			6:begin instr_agente = uno_todos; instr_sb = reporte_completo; end
-			7:begin instr_agente = todos_uno; instr_sb = reporte_completo; end
-		endcase
+			case(Prueba)
+				1:begin instr_agente = genericos; instr_sb = retraso_promedio; end
+				2:begin numero_instrucciones = 5; instr_agente =broadcast_inst ; instr_sb = bwmax; end
+				3:begin instr_agente = Rst_aleatorio; instr_sb =retraso_promedio ; end
+				4:begin instr_agente = Completo; instr_sb = retraso_promedio; end
+				5:begin instr_agente = trans_especifica; instr_sb = reporte_completo ; end
+				6:begin instr_agente = uno_todos; instr_sb = reporte_completo; end
+				7:begin instr_agente = todos_uno; instr_sb = reporte_completo; end
+			endcase
 
-		//Conexiones instancias
-		t0._if = _if;		
-		t0.ambiente_instancia.driver_inst.vif=_if;
-
-
-		t0.ambiente_instancia.agente_inst.num_transacciones=numero_instrucciones;
-		t0.instr_sb=instr_sb; //Para seleccionar la instruccion manual
-		//Conexiones parametros pruebas
-		t0.ambiente_instancia.agente_inst.broadcast_id=broadcast_indi;
-		t0.ambiente_instancia.agente_inst.max_retardo=max_retardo;
-		t0.instr_agente=instr_agente;
-	
-
-		t0.ambiente_instancia.agente_inst.tpo_spec=tpo_spec;
-		t0.ambiente_instancia.agente_inst.fte_spec=fte_spec;
-		t0.ambiente_instancia.agente_inst.dest_spec=dest_spec;
-		t0.ambiente_instancia.agente_inst.dato_spec=dato_spec;
-		t0.ambiente_instancia.agente_inst.ret_spec=ret_spec;
-	
+			//Conexiones instancias
+			t0._if = _if;		
+			t0.ambiente_instancia.driver_inst.vif=_if;
 
 
-		fork
-			t0.run();
+			t0.ambiente_instancia.agente_inst.num_transacciones=numero_instrucciones;
+			t0.instr_sb=instr_sb; //Para seleccionar la instruccion manual
+			//Conexiones parametros pruebas
+			t0.ambiente_instancia.agente_inst.broadcast_id=broadcast_indi;
+			t0.ambiente_instancia.agente_inst.max_retardo=max_retardo;
+			t0.instr_agente=instr_agente;
 			
-		join_none
+
+			t0.ambiente_instancia.agente_inst.tpo_spec=tpo_spec;
+			t0.ambiente_instancia.agente_inst.fte_spec=fte_spec;
+			t0.ambiente_instancia.agente_inst.dest_spec=dest_spec;
+			t0.ambiente_instancia.agente_inst.dato_spec=dato_spec;
+			t0.ambiente_instancia.agente_inst.ret_spec=ret_spec;
+			
+
+
+			fork
+				t0.run();
+					
+			join_none
+		end		
+		always @(posedge clk) begin
+			if ($time > 100000) begin
+				$display ("[%g] Test_bench: Tiempo limite en el test_bench alcanzado :D",$time);
+				$finish;
+		
+			end
+			
+		end
 	end
-		
-	always @(posedge clk) begin
-		if ($time > 100000) begin
-			$display ("[%g] Test_bench: Tiempo limite en el test_bench alcanzado :D",$time);
-			$finish;
-		
-		end	
-	end
-		
 endmodule
 
 

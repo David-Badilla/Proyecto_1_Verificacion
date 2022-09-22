@@ -1,0 +1,19 @@
+#Este script es para poder correr el ambiente de pruebas del primer proyecto de David Badilla y Daniel Mora.
+#Para correrlo es necesario estar la carpeta en donde está el repositorio Proyecto_1_Verificación.
+#El archivo lleva por nombre "ejecucion" por lo que ya estando en la carpeta antes menciona y utilizando-
+#la instruccion "source ejecucion" y se correrá todo lo necesario para compilar el proyecto y generar las pruebas-
+#respectivas.
+
+
+vcs -Mupdate test_bench.sv -o salida -full64 -sverilog -kdb -lca -debug_acc+all -debug_region+cell+encrypt -l log_test
+
+./salida +ntb_random_seed=3
+./salida +ntb_random_seed=2
+./salida +ntb_random_seed=1
+./salida +ntb_random_seed=0
+./salida +ntb_random_seed=4
+./salida +ntb_random_seed=5
+./salida +ntb_random_seed=6
+./salida +ntb_random_seed=7
+./salida +ntb_random_seed=8
+./salida +ntb_random_seed=9
