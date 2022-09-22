@@ -22,7 +22,7 @@ module test_bench;
 	parameter ancho = 20;
 	parameter drvrs =  8;
 	parameter [7:0] broadcast_indi = {8{1'b1}};
-	int numero_instrucciones=30; //En general se utiliza esta para todos menos broadcast
+	 //En general se utiliza esta para todos menos broadcast
 	int max_retardo=20;
 	instrucciones_agente instr_agente = Rst_aleatorio; //genericos, broadcast_inst , Rst_aleatorio, Completo, trans_especifica, uno_todos,todos_uno
 	solicitud_sb instr_sb = reporte_completo;//retraso_promedio, bwmax, bwmin, reporte_completo;
@@ -45,23 +45,25 @@ module test_bench;
 	//***********************************************************************************
 
 
-
-	test #(.ancho(ancho) , .drvrs(drvrs)) t0;	//Instancia clase test
-	bus_if #(.pckg_sz(ancho),.drvrs(drvrs))  _if(.clk(clk)); //Instancia interfaz
-	always #5 clk=~clk;
-	
-	//Instanciacion y conexion con el dut con parametros y la interfaz
-	bs_gnrtr_n_rbtr #(.drvrs(drvrs),.pckg_sz(ancho), .broadcast(broadcast_indi)) 
-		         DUT(.clk(clk),
-		             .reset(_if.rst),
-		             .pndng(_if.pndng),
-		             .push(_if.push),
-		             .pop(_if.pop),
-		             .D_pop(_if.D_pop),
-		             .D_push(_if.D_push) );
-		             
-	for (genvar Prueba = 1; Prueba <= 7; Prueba++) begin	               
+	for (genvar Prueba = 1; Prueba <= 7; Prueba++) begin	
+		test #(.ancho(ancho) , .drvrs(drvrs)) t0;	//Instancia clase test
+		bus_if #(.pckg_sz(ancho),.drvrs(drvrs))  _if(.clk(clk)); //Instancia interfaz
+		always #5 clk=~clk;
+		
+		//Instanciacion y conexion con el dut con parametros y la interfaz
+		bs_gnrtr_n_rbtr #(.drvrs(drvrs),.pckg_sz(ancho), .broadcast(broadcast_indi)) 
+				 DUT(.clk(clk),
+				     .reset(_if.rst),
+				     .pndng(_if.pndng),
+				     .push(_if.push),
+				     .pop(_if.pop),
+				     .D_pop(_if.D_pop),
+				     .D_push(_if.D_push) );
+				     
+	//for (genvar Prueba = 1; Prueba <= 7; Prueba++) begin	 
+		int numero_instrucciones=30;              
 		initial begin
+			
 			clk=0;
 			t0=new();
 
