@@ -19,8 +19,8 @@ module test_bench;
 	reg clk;
 
 	//Parametros editables desde aca mas facil
-	parameter ancho = 16;
-	parameter drvrs = 6;
+	parameter ancho = 32;
+	parameter drvrs = 16;
 	parameter [7:0] broadcast_indi = {8{1'b1}};
 	 //En general se utiliza esta para todos menos broadcast
 	int max_retardo=20;
@@ -31,7 +31,7 @@ module test_bench;
 	
 	
 	//******************HACER CAMBIOS PARA PRUEBAS AQUÍ *********************************
-	int Prueba = 1; //Prueba 0 deja pasar los datos por defecto de arriba
+	int Prueba = 5; //Prueba 0 deja pasar los datos por defecto de arriba
 
 	//Variables para transaccion especifica
 
@@ -110,9 +110,3 @@ module test_bench;
 		
 	end
 endmodule
-
-
-
-
-
-
